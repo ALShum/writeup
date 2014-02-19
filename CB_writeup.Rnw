@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage{url}
+\usepackage{amsfonts}
+\usepackage[margin=1in]{geometry}
+\setlength{\parindent}{0in}
+
+\title{Accessing Data with the Census Bureau API}
+\author{Alex Shum}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+The United States Census Bureau has been conducting a decennial census since 1790.  Originally this census was a simply to count the population across the country.  More recently the decennial census includes a short-form asking for name, sex, age, and a few other demographic variables.  About one in six households also received a long-form that contained additional socioeconomic questions.  After the 2000 decennial census many of the long-form questions were collected as part of a new survey: the American Community Survey (ACS).  \\
+\\
+The ACS is an ongoing yearly survey that collects additional demographic variables including but not limited to age, sex, race, income and education.  Similar to the decennial census long-form, the American Community Survey is distributed based on a random selection of addresses every year.  This data is meant to provide more up to date information than the Census Bureau's decennial census and both the decennial census and the American Community Survey are required by law.\\
+\\
+Both the decennial survey and the ACS data are used in part by federal, state and local agencies to allocate state funding and for policy decisions.  The Census Bureau has also released some of this data for public use.  Many of the data sets are available directly in a compressed format from the Census Bureau's FTP site: \url{http://ftp2.census.gov/}.  Since 2012, the Census Bureau has also included an online developer's API in order to improve accessibility of the ACS and decennial census datasets.\\
+\\
+We will discuss how the ACS data is organized and how to access data from the Census Bureau's online developer's API.  We will also discuss what kind of variables are available and some limitations with the API.  We will use "Taking a Chance in the Classroom: The American Community Survey", an article by Morgan, Cetinkaya-Rundel and Stangl as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access and inconsistencies in the database.
+
+\section{Geography}
+Before we take a look at how the variables in the Census Bureau API are organized, we first look at how the Census Bureau handles the various geographic borders.  Notably the API does not provide a way to pull data for the nation as a whole.  The only way to get nation level data is to pull data for all states and aggregate that number into a national number.\\
+<<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3>>=
+library(ggplot2)
+states.map = map_data("state")
+states.map$CA = states.map$region=="california"
+qplot(long, lat, data=states.map, group=group, order=order, geom="polygon", fill=CA) + 
+  theme(legend.position = "none")
+@
+At the very top of the hierarchy we can view data from all states or specify a state.  In the above plot we have selected California.\\
+\\
+<<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE>>=
+counties.map = map_data("county")
+counties.map$CA = as.numeric(counties.map$region=="california")
+counties.map[counties.map$region=="california" & counties.map$subregion=="los angeles",]$CA = 2
+qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fill=CA) + 
+  theme(legend.position = "none")
+@
+Alternatively we can also view data from all counties in all states, we can specify all counties in a specific state or we can select a specific county within a specific state.  Above we have selected Los Angeles county within California.  Congressional district is the other geographic division that we can view simultaneously for all states.\\
+\\
+There are a number of geographies available below the state and county leve.  The API also supports ZIP code areas, school districts, county subdivision, metropolitan statistical areas, legislative districts, and numerous other geographic divisions.  For many of these geographic divisions it is not possible to pull data without specifying a state.  For example, it is not possible to specify all United States census tracts.  Instead, the Census API requires that we specify a state before we can view a census tract.  Once we specify a state we can specify all or a particular census tract.\\
+\\
+
+<<school, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE>>=
+#2013 shape files: http://www.census.gov/cgi-bin/geo/shapefiles2013/main
+library(maptools)
+#census = readShapeSpatial("Z:/My Documents/shapes/tl_2013_06_tract.shp")
+#schools = thinnedSpatialPoly(as(schools, "SpatialPolygons"), tolerance=0.1, minarea=0.001, topologyPreserve=TRUE)
+#census.df = fortify(census)
+
+@
+\section{Finding Tables}
+
+\section{Accessing Data}
+<<table, echo=FALSE>>=
+library(xtable)
+acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
+
+#structure of data isn't a dataframe but multiple tables
+#each table has a different "base population"
+#sometimes base population for similar variables does not add up
+@
+
+
+\section{Limitations}
+<<var, echo=FALSE>>=
+#example1: (chance #3, #5)
+#age + sex + health insurance available.
+#age + race + health insurance available.
+#age + race + sex + health insurance not available
+
+#example2: (chance #4)
+#age + sex + marriage available
+#race + sex + marriage available
+#age + sex + race + marriage not available
+
+#example3: (chance #6)
+#age + sex + race available
+#numbers don't match with example1 for aggregates
+
+#example4: (chance #7)
+#median income + sex + work experience available.
+#per capita income + race available
+#per capita income + race + sex not available
+#median income + sex + race not available
+
+#example5: (change#9)
+#chance #8 available
+#chance #9 not available #10
+@
+
+\section{Other Issues}
+%tables formatted differently
+%2010acs5 differently formatted
+%difficult to compare data across years
+%healthcare questions added in 2008
+
+
+\section{Conclusion}
+\end{document}
