@@ -19,40 +19,53 @@ Both the decennial survey and the ACS data are used in part by federal, state an
 We will discuss how the ACS data is organized and how to access data from the Census Bureau's online developer's API.  We will also discuss what kind of variables are available and some limitations with the API.  We will use "Taking a Chance in the Classroom: The American Community Survey", an article by Morgan, Cetinkaya-Rundel and Stangl as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access and inconsistencies in the database.
 
 \section{Geography}
-Before we take a look at how the variables in the Census Bureau API are organized, we first look at how the Census Bureau handles the various geographic borders.  Notably the API does not provide a way to pull data for the nation as a whole.  The only way to get nation level data is to pull data for all states and aggregate that number into a national number.\\
-<<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3>>=
+Before we take a look at how the variables in the Census Bureau API are organized, we first look at how the Census Bureau handles the various geographic borders.  The Census Bureau has a very sophisticated system of hierarchy for geography.  For the ACS, at the top level there is the entire nation, followed by region, division, state, county, county-subdivision, tract, block group, place, congressional district, zip code area, school district and a few other geographic divisions.  Outside of the ACS, the Census Bureau employs at least a dozen other geographic concepts.\\
+\\
+<<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE>>=
 library(ggplot2)
 states.map = map_data("state")
 states.map$CA = states.map$region=="california"
 qplot(long, lat, data=states.map, group=group, order=order, geom="polygon", fill=CA) + 
   theme(legend.position = "none")
 @
-At the very top of the hierarchy we can view data from all states or specify a state.  In the above plot we have selected California.\\
+Near the very top of the hierarchy we can view data from all states or specify a state.  In the above plot we have selected California.\\
 \\
 <<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE>>=
 counties.map = map_data("county")
 counties.map$CA = as.numeric(counties.map$region=="california")
 counties.map[counties.map$region=="california" & counties.map$subregion=="los angeles",]$CA = 2
-qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fill=CA) + 
+qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fill=factor(CA)) + 
   theme(legend.position = "none")
 @
-Alternatively we can also view data from all counties in all states, we can specify all counties in a specific state or we can select a specific county within a specific state.  Above we have selected Los Angeles county within California.  Congressional district is the other geographic division that we can view simultaneously for all states.\\
+Alternatively we can also view data from all counties in all states, we can specify all counties in a specific state or we can select a specific county within a specific state.  Above we have selected Los Angeles county within California.  Congressional district and ZIP code areas are the other geographic divisions that we can view simultaneously for all states.\\
 \\
-There are a number of geographies available below the state and county leve.  The API also supports ZIP code areas, school districts, county subdivision, metropolitan statistical areas, legislative districts, and numerous other geographic divisions.  For many of these geographic divisions it is not possible to pull data without specifying a state.  For example, it is not possible to specify all United States census tracts.  Instead, the Census API requires that we specify a state before we can view a census tract.  Once we specify a state we can specify all or a particular census tract.\\
-\\
-
-<<school, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE>>=
-#2013 shape files: http://www.census.gov/cgi-bin/geo/shapefiles2013/main
+<<censustract, echo=FALSE, warning=FALSE, message=FALSE, fig.height=5, cache=TRUE>>=
 library(maptools)
-#census = readShapeSpatial("Z:/My Documents/shapes/tl_2013_06_tract.shp")
-#schools = thinnedSpatialPoly(as(schools, "SpatialPolygons"), tolerance=0.1, minarea=0.001, topologyPreserve=TRUE)
-#census.df = fortify(census)
-
+ca.tracts = readShapeSpatial("tl_2013_06_cousub.shp")
+ca.geo = fortify(ca.tracts)
+ca.data = ca.tracts@data
+ca.geo$LA = 0
+ca.geo[ca.geo$id %in% as.numeric(row.names(ca.data[which(ca.data$COUNTYFP=="037"),])),]$LA = 1
+ca.geo[ca.geo$id == 13,]$LA = 2
+qplot(long, lat, data=ca.geo, group=group, order=order, geom="polygon", fill=factor(LA)) + 
+  theme(legend.position = "none")
 @
-\section{Finding Tables}
+There are a number of geographies available below the state and county level.  For example, the API also supports school districts, county subdivision, metropolitan statistical areas and legislative districts.  For many of these geographic divisions it is not possible to pull data without specifying a state or a county.  Above we have selected Pasadena, a county subdivision, within Los Angeles County.\\
+\\
+Below the county level it is quite complicated which items need to be specified.  For example, if we wanted census tracts we need to specify state and county but we cannot specify state, county, census tract and county subdivision.  Another complication is that some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative distrcits or county borders.\\
+\\
+For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}.  Fortunately, the census bureau has also included JSON and XML files that can be parsed to insure that a valid geography is requested.\\
+\\
+%talk about XML/JSON here
+\begin{verbatim}
+\end{verbatim}
+
+\section{Finding Data Sets and Tables}
+%XML/JSON structure for variables list
+%XML/JSON structure for available geographies
 
 \section{Accessing Data}
-<<table, echo=FALSE>>=
+<<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
 
