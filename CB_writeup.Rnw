@@ -56,26 +56,28 @@ Below the county level it is quite complicated which items need to be specified.
 \\
 For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}.  Fortunately, the census bureau has also included JSON and XML files that can be parsed to insure that a valid geography is requested.\\
 \\
-%talk about XML/JSON here
+%talk about XML/JSON for geographies here
 \begin{verbatim}
 \end{verbatim}
 
 \section{Finding Data Sets and Tables}
 %XML/JSON structure for variables list
-%XML/JSON structure for available geographies
 
-\section{Accessing Data}
-<<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
+\section{Table Structure}
+
+\section{Limitations}
+<<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis">>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
-
+print(xtable(head(acsdat)))
 #structure of data isn't a dataframe but multiple tables
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
 @
+From the "Taking a Chance in the Classroom: The American Community Survey" article by Morgan, Cetinkaya-Rundel and Stangl, the dataset they use is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  The biggest difference between data pulled from the Census Bureau's online API and the sample dataset used by Morgan et al. is that in the latter dataset each row describes an individual citizen and each column is a variable.  The online API does not provide detail to the same level; variables are described in tables with each row of the table representing a geographic unit such as a state or county.  Each column of the table is a subset of the table population.\\
+\\
 
 
-\section{Limitations}
 <<var, echo=FALSE>>=
 #example1: (chance #3, #5)
 #age + sex + health insurance available.
@@ -108,6 +110,48 @@ acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
 %difficult to compare data across years
 %healthcare questions added in 2008
 
+\section{Examples from ACS}
+<<NY, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
+library(plyr)
+library(acs)
+NYC = geo.make(state="NY", county=c("New York County", "Bronx County", "Kings County", "Queens County", "Richmond County"), tract="*")
+f.nyc = acs.fetch(endyear = 2012, span = 5, geography = NYC, table.name = c("In Combination With One Or More Other Races"), col.names="pretty")
+
+library(maptools)
+ny.tracts = readShapeSpatial("Z:/My Documents/shapes/nyct2010.shp")
+ny.tracts@data$id = rownames(ny.tracts@data)
+ny.points = fortify(ny.tracts)
+ny.df = join(ny.points, ny.tracts@data, by="id")
+#CTlabel = censustract label
+
+#merge shapefile data with ACS data
+f.nyc = data.frame(f.nyc@estimate)
+
+split=ldply(strsplit(rownames(f.nyc), ","))
+f.nyc$state = tolower(sub("^.*, ", "", rownames(f.nyc)))
+f.nyc$tract = tolower(gsub("Census Tract ", "", split[,1]))
+f.nyc$county = tolower(gsub("^[ ]","",split[,2]))
+f.nyc$county = gsub(" county", "", f.nyc$county)
+f.nyc$county = gsub("kings", "brooklyn", f.nyc$county)
+f.nyc$county = gsub("new york", "manhattan", f.nyc$county)
+f.nyc$county = gsub("richmond", "staten island", f.nyc$county)
+rownames(f.nyc) = NULL
+
+f.nyc$tract = as.numeric(f.nyc$tract)
+ny.df$CTLabel = as.numeric(as.character(ny.df$CTLabel))
+ny.df$BoroName = tolower(ny.df$BoroName)
+
+final = merge(x = ny.df, y = f.nyc, by.x = c("CTLabel", "BoroName"), by.y = c("tract", "county"), all.x=TRUE)
+names(final)[19:24] = c("white", "black", "indian", "asian", "hawaiian", "other")
+
+
+
+final$race = unlist(apply(final[,19:24], 1, function(x){
+  if(sum(is.na(x)) == length(19:24)) return("NA")
+  else return(names(which.max(x)))
+}))
+qplot(long, lat, data = final, group=group, order=order, geom="polygon", fill=race)
+@
 
 \section{Conclusion}
 \end{document}
