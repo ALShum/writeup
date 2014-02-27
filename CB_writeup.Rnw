@@ -39,7 +39,7 @@ qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fi
 @
 Alternatively we can also view data from all counties in all states, we can specify all counties in a specific state or we can select a specific county within a specific state.  Above we have selected Los Angeles county within California.  Congressional district and ZIP code areas are the other geographic divisions that we can view simultaneously for all states.\\
 \\
-<<censustract, echo=FALSE, warning=FALSE, message=FALSE, fig.height=5, cache=TRUE>>=
+<<censustractstate, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.show='hold'>>=
 library(maptools)
 ca.tracts = readShapeSpatial("tl_2013_06_cousub.shp")
 ca.geo = fortify(ca.tracts)
@@ -48,25 +48,48 @@ ca.geo$LA = 0
 ca.geo[ca.geo$id %in% as.numeric(row.names(ca.data[which(ca.data$COUNTYFP=="037"),])),]$LA = 1
 ca.geo[ca.geo$id == 13,]$LA = 2
 qplot(long, lat, data=ca.geo, group=group, order=order, geom="polygon", fill=factor(LA)) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") 
+qplot(long, lat, data=subset(ca.geo, LA > 0), group=group, order=order, geom="polygon", fill=factor(LA)) + theme(legend.position = "none")
 @
+
 There are a number of geographies available below the state and county level.  For example, the API also supports school districts, county subdivision, metropolitan statistical areas and legislative districts.  For many of these geographic divisions it is not possible to pull data without specifying a state or a county.  Above we have selected Pasadena, a county subdivision, within Los Angeles County.\\
 \\
 Below the county level it is quite complicated which items need to be specified.  For example, if we wanted census tracts we need to specify state and county but we cannot specify state, county, census tract and county subdivision.  Another complication is that some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative distrcits or county borders.\\
 \\
 For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}.  Fortunately, the census bureau has also included JSON and XML files that can be parsed to insure that a valid geography is requested.\\
 \\
-%talk about XML/JSON for geographies here
+Each dataset available on the Census Bureau online API include an associated geography file formatted in JSON as follows:
 \begin{verbatim}
+{
+  "name": "tract",
+  "requires:" [
+    "state",
+    "county"
+  ],
+  "optionalWithWCFor": "county"
+}
 \end{verbatim}
+Here is the corresponding geographic area formatted in XML:
+\begin{verbatim}
+<fips name="tract">
+  <requires name="state"/>
+  <requires name="county" is-optional-with-wcfor="true"/>
+</fips>
+\end{verbatim}
+The JSON and XML indicate for this dataset requesting a census tract level information we are required to specify a state.  We may also specify a county if we wish to request information for some or all census tracts in a county but if we do not specify a county we can have a similar request for some or all census tracts in a state.
 
 \section{Finding Data Sets and Tables}
 %XML/JSON structure for variables list
+A recent addition to the Census Bureau API is the inclusion of a master index of available dataset formatted in both JSON and XML.  
 
 \section{Table Structure}
 
+
 \section{Limitations}
-<<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis">>=
+The dataset used by Morgan, Cetinkaya-Rundel and Stangl in "Taking a Chance in the Classroom: The American Community Survey" is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
+\\
+Using the Census Bureau's online API for these exercises presents us three main problems.  The first problem is the structure of how the data is organized in the public use microdata sample versus how the data is organized in the online API.  The second problem is that the census does not provide proportions and finding standard errors for these proportions requires a bit more work.  Finally, the third problem is that certain combination of variables are simply not available from the online API.
+<<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", >>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
 print(xtable(head(acsdat)))
@@ -74,9 +97,19 @@ print(xtable(head(acsdat)))
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
 @
-From the "Taking a Chance in the Classroom: The American Community Survey" article by Morgan, Cetinkaya-Rundel and Stangl, the dataset they use is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  The biggest difference between data pulled from the Census Bureau's online API and the sample dataset used by Morgan et al. is that in the latter dataset each row describes an individual citizen and each column is a variable.  The online API does not provide detail to the same level; variables are described in tables with each row of the table representing a geographic unit such as a state or county.  Each column of the table is a subset of the table population.\\
-\\
+Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See figure \ref{ref:table} for a small subset of the data used by Morgan et al.
+<<example, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis">>=
+library(acs)
+library(xtable)
+states = geo.make(state = "*")
+dat = acs.fetch(endyear = 2012, span = 5, geography = states, table.number="B27001")
+dat2 = acs.fetch(endyear = 2012, span = 5, geography = states, table.number="B27001", col.names="pretty")
 
+tab1 = xtable(head(dat@estimate[,1:5]))
+digits(tab1) = rep(0,6)
+print(tab1)
+@
+By contrast the online API does not provide individual level data.  When we request information we must specify what geographic level of detail we want.  In figure \ref{ref:example} we specify state level summaries for table variable B27001.
 
 <<var, echo=FALSE>>=
 #example1: (chance #3, #5)
