@@ -19,9 +19,55 @@ Both the decennial survey and the ACS data are used in part by federal, state an
 We will discuss how the ACS data is structured when we request data and how to access data from the Census Bureau's online developer's API.  We will also discuss what kind of variables are available and some limitations with the API.  We will use "Taking a Chance in the Classroom: The American Community Survey", an article by Morgan, Cetinkaya-Rundel and Stangl as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access and inconsistencies in the database.
 
 \section{Geography}
-The Census Bureau has a very sophisticated system of hierarchy for geography.  For the ACS, at the top level there is the entire nation, followed by region, division, state, county, county-subdivision, tract, block group, place, congressional district, zip code area, school district and a few other geographic divisions.  See figure \ref{} for a complete table of geographies available on the census API.\\ %insert table%
-\\
-Each dataset available on the Census Bureau online API include an associated geography file formatted in JSON and a similar file formatted in XML.  JSON stands for JavaScript Object Notation and it is a lightweight machine format for sending data.  JSON is structured using name-value pairs and is also designed to be human-readable.  There are many libraries to generate and process JSON.  The JSON formatted file for geographies has the following format:
+The Census Bureau has a very sophisticated system of hierarchy for geography.  For the ACS, at the top level there is the entire nation, followed by region, division, state, county, county-subdivision, tract, block group, place, congressional district, zip code area, school district and a few other geographic divisions.  See table \ref{tab:geolist} for a complete table of geographies available on the census API for the 2012 ACS.\\
+
+<<geotable, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE>>=
+#http://api.census.gov/data/2012/acs5/geo.html
+library(xtable)
+library(XML)
+ta = readHTMLTable("http://api.census.gov/data/2012/acs5/geo.html")[[1]]
+ta = ta[,-3]
+tabl = xtable(ta)
+caption(tabl) = "List of valid geographic combinations"
+@
+\begin{table}[ht]
+\centering
+\begin{tabular}{rll}
+  \hline
+ & Summary Level & Description \\ 
+  \hline
+  1 & 010 & us \\ 
+  2 & 020 & region \\ 
+  3 & 030 & division \\ 
+  4 & 040 & state \\ 
+  5 & 050 & state-county \\ 
+  6 & 060 & state-county-county subdivision \\ 
+  7 & 140 & state-county-tract \\ 
+  8 & 150 & state-county-tract-block group \\ 
+  9 & 160 & state-place \\ 
+  10 & 250 & american indian area/alaska native area/hawaiian home land \\ 
+  11 & 310 & metropolitan statistical area/micropolitan statistical area \\ 
+  12 & 320 & state-metropolitan statistical area/micropolitan statistical area \\ 
+  13 & 330 & combined statistical area \\ 
+  14 & 340 & state-combined statistical area \\ 
+  15 & 350 & new england city and town area \\ 
+  16 & 400 & urban area \\ 
+  17 & 500 & state-congressional district \\ 
+  18 & 510 & state-congressional district-county \\ 
+  19 & 610 & state-state legislative district (upper chamber) \\ 
+  20 & 620 & state-state legislative district (lower chamber) \\ 
+  21 & 795 & state-public use microdata area \\ 
+  22 & 860 & zip code tabulation area\\
+  23 & 950 & state-school district (elementary) \\ 
+  24 & 960 & state-school district (secondary) \\ 
+  25 & 970 & state-school district (unified) \\ 
+   \hline
+\end{tabular}
+\caption{List of valid geographic combinations}
+\label{tab:geolist}
+\end{table}
+
+From table \ref{tab:geolist}, the hierarchy for geographic regions is very specific in the combinations of geographic regions that we can specify.  Different ACS datasets might have slightly different geographic regions available.  Fortunately, each dataset available on the Census Bureau online API include an associated geography file formatted in JSON and a similar file formatted in XML.  JSON stands for JavaScript Object Notation and it is a lightweight machine format for sending data.  JSON is structured using name-value pairs and is also designed to be human-readable.  There are many libraries to generate and process JSON.  The JSON formatted file for geographies has the following format:
 \begin{verbatim}
 {
   "name": "tract",
@@ -42,27 +88,24 @@ Alternatively, the geographic information is available in XML.  XML stands for E
 </fips>
 \end{verbatim}
 In the following example, we will examine various geographies available from the online API for the state of California.\\
-<<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE>>=
+<<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE, fig.cap='California selected'>>=
 library(ggplot2)
 states.map = map_data("state")
 states.map$CA = states.map$region=="california"
 qplot(long, lat, data=states.map, group=group, order=order, geom="polygon", fill=CA) + 
   theme(legend.position = "none")
 @
-%http://api.census.gov/data/2012/acs5/geo.html
+At the top of the hierarchy we can view data at the country level; this is data aggregated among all states and corresponds to summary level 010 from table \ref{tab:geolist}.  Below that we can view data by state.  At the state level we can view data for all states or select a particular state; this is summary level 040.  In figure \ref{fig:state} we have selected California.\\
 
-Near the very top of the hierarchy we can view data from all states or specify a state.  In the above plot we have selected California.\\
-\\
-<<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE>>=
+<<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE, fig.cap='Los Angeles county selected'>>=
 counties.map = map_data("county")
 counties.map$CA = as.numeric(counties.map$region=="california")
 counties.map[counties.map$region=="california" & counties.map$subregion=="los angeles",]$CA = 2
 qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fill=factor(CA)) + 
   theme(legend.position = "none")
 @
-Alternatively we can also view data from all counties in all states, we can specify all counties in a specific state or we can select a specific county within a specific state.  Above we have selected Los Angeles county within California.  Congressional district and ZIP code areas are the other geographic divisions that we can view simultaneously for all states.\\
-\\
-<<censustractstate, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.show='hold'>>=
+Below states we can select counties and census tracts.  At the county level, after we specify California we can look at counties within California (summary level 050).  We can see from figure \ref{fig:county} that we have selected Los Angeles county within California state.  There are a few other geographic regions we can subset by within a state such as ZIP code tabulation area; we could have selected 90210 which corresponds to Beverly Hills, California.\\
+<<censustractstate, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.show='hold', fig.cap='Pasadena county subdivision selected'>>=
 library(maptools)
 ca.tracts = readShapeSpatial("tl_2013_06_cousub.shp")
 ca.geo = fortify(ca.tracts)
@@ -75,26 +118,28 @@ qplot(long, lat, data=ca.geo, group=group, order=order, geom="polygon", fill=fac
 qplot(long, lat, data=subset(ca.geo, LA > 0), group=group, order=order, geom="polygon", fill=factor(LA)) + theme(legend.position = "none")
 @
 
-There are a number of geographies available below the state and county level.  For example, the API also supports school districts, county subdivision, metropolitan statistical areas and legislative districts.  It is not possible to request data for many of the smaller geographic divisions without specifying a state or a county.  Above we have selected Pasadena, a county subdivision, within Los Angeles County.\\
+There are a number of geographies available below the state and county level.  For example, the API also supports school districts, county subdivision, metropolitan statistical areas and legislative districts.  The difficulty is that it is not possible to request data for many of the smaller geographic divisions without specifying a state or a county.  In figure \ref{fig:censustractstate} we have selected Pasadena, a county subdivision, within Los Angeles County.  For county subdivisions we cannot simply specify Pasadena and we also cannot specify just California and Pasadena; subdivision alone and state-subdivision are not a valid geographic combinations.  Instead, we must specify California, Los Angeles County and then Pasadena.  We can see from table \ref{tab:geolist} that state-county-subdivision is a valid summary level. \\
 \\
-Below the county level it is quite complicated which items need to be specified.  For example, if we wanted census tracts we need to specify state and county but we cannot specify state, county, census tract and county subdivision.  Another complication is that some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative distrcits or county borders.\\
+Although all the entries in table \ref{tab:geolist} are valid geographic combinations, some parts of geographic combinations may be optional.  For example, if we wanted census tracts we need to specify state and county (summary level 140).  In contrast to county subdivisions where we needed to specify both state and county, for census tracts specifying county is optional.  This means that state-tract is also a valid geographic combination.  It is best to refer to each datasets JSON or XML file for geographic compatabilities.\\
 \\
-For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}.\\
+Another complication is that not all geographic divisions are compatible.  That is to say that some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative districts or county borders.
+%Insert Iowa example here
 \\
-
+\\
+For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset or the XML or JSON geography files.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}, the XML file is located at \url{http://api.census.gov/data/2012/acs5/geography.xml} and the JSON file is located at \url{http://api.census.gov/data/2012/acs5/geography.json}.
 
 \section{Finding Data Sets and Tables}
 %XML/JSON structure for variables list
 A recent addition to the Census Bureau API is the inclusion of a master index of available dataset formatted in both JSON and XML.  
 
 \section{Requesting Data and Table Structure}
-
+%explain get queries here
 
 \section{Limitations}
 The dataset used by Morgan, Cetinkaya-Rundel and Stangl in "Taking a Chance in the Classroom: The American Community Survey" is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
 \\
 Using the Census Bureau's online API for these exercises presents us three main problems.  The first problem is the structure of how the data is organized in the public use microdata sample versus how the data is organized in the online API.  The second problem is that the census does not provide proportions and finding standard errors for these proportions requires a bit more work.  Finally, the third problem is that certain combination of variables are simply not available from the online API.
-<<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", >>=
+<<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
 print(xtable(head(acsdat)))
@@ -102,8 +147,8 @@ print(xtable(head(acsdat)))
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
 @
-Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See figure \ref{ref:table} for a small subset of the data used by Morgan et al.
-<<example, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis">>=
+Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See figure \ref{fig:table} for a small subset of the data used by Morgan et al.
+<<example, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Health care data from online API'>>=
 library(acs)
 library(xtable)
 states = geo.make(state = "*")
@@ -114,7 +159,7 @@ tab1 = xtable(head(dat@estimate[,1:5]))
 digits(tab1) = rep(0,6)
 print(tab1)
 @
-By contrast the online API does not provide individual level data.  When we request information we must specify what geographic level of detail we want.  In figure \ref{ref:example} we specify state level summaries for table variable B27001.
+By contrast the online API does not provide individual level data.  When we perform a get query we must specify what geographic level of detail we want.  In table \ref{fig:example} we specify state level summaries for table variable B27001.  Table variable B27001 is related to health insurance coverage status for various age groups grouped by gender.  Each column in table \ref{fig:example} is a sub-table on B27001.
 
 <<var, echo=FALSE>>=
 #example1: (chance #3, #5)
