@@ -122,18 +122,94 @@ There are a number of geographies available below the state and county level.  F
 \\
 Although all the entries in table \ref{tab:geolist} are valid geographic combinations, some parts of geographic combinations may be optional.  For example, if we wanted census tracts we need to specify state and county (summary level 140).  In contrast to county subdivisions where we needed to specify both state and county, for census tracts specifying county is optional.  This means that state-tract is also a valid geographic combination.  It is best to refer to each datasets JSON or XML file for geographic compatabilities.\\
 \\
-Another complication is that not all geographic divisions are compatible.  That is to say that some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative districts or county borders.
+Another complication is that not all geographic divisions are compatible.  That is to say that some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative districts or county borders.  <EXAMPLE HERE>
 %Insert Iowa example here
 \\
 \\
-For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset or the XML or JSON geography files.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}, the XML file is located at \url{http://api.census.gov/data/2012/acs5/geography.xml} and the JSON file is located at \url{http://api.census.gov/data/2012/acs5/geography.json}.
+For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset or the XML or JSON geography files.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}, the XML file is located at \url{http://api.census.gov/data/2012/acs5/geography.xml} and the JSON file is located at \url{http://api.census.gov/data/2012/acs5/geography.json}.  Currently there are three types of datasets available from the online API: the decennial census, the ACS and economic indicator time series data.
 
 \section{Finding Data Sets and Tables}
-%XML/JSON structure for variables list
-A recent addition to the Census Bureau API is the inclusion of a master index of available dataset formatted in both JSON and XML.  
+A recent addition to the Census Bureau API is the inclusion of a master index of available dataset formatted in both JSON and XML.  The JSON file is available online at \url{http://api.census.gov/data.json} and the XML file is available online at \url{http://api.census.gov/data.xml}.  This master index includes necessary meta-information about each dataset including description, links to geography and variable information and contact information for maintainer of datasets.  The JSON format is formatted as follows:
+\begin{verbatim}
+{
+  "c_vintage": 2012,
+  "c_dataset":[ 
+    "acs5"
+  ],
+  "c_geographyLink": "http://api.census.gov/data/2012/acs5/geography.json",
+  "c_variablesLink": "http://api.census.gov/data/2012/acs5/variables.json",
+  "c_tagsLink": "http://api.census.gov/data/2012/acs5/tags.json",
+  "c_examplesLink": "http://api.census.gov/data/2012/acs5/examples.json",
+  "c_documentationLink": "http://www.census.gov/developers/",
+  "c_isAggregate": true,
+  "title": "2012 American Community Survey: 5-Year Estimates",
+  "webService": "http://api.census.gov/data/2012/acs5",
+  "accessLevel": "public",
+  "bureauCode": [
+    "006:07"
+  ],
+  "contactPoint": "Census Bureau Call Center",
+  "description": "The American Community Survey (ACS) is a nationwide survey...",
+  "identifier": "2012acs5",
+  "mbox": "pio@census.gov",
+  "publisher": "US Census Bureau",
+  "references": [
+    "http://www.census.gov/developers/"
+  ],
+  "spatial": "US",
+  "temporal": "2012"
+  },
+}
+\end{verbatim}
+The above excerpt from \url{http://api.census.gov/data.json} is the meta-information about the 2008-2012 ACS 5-year dataset.  For this dataset there are links to the associated geography file and to another JSON file $variables.json$ which is a list of variables available from this dataset.  For the above example the same meta-information is formatted in XML as follows:
+\begin{verbatim}
+<dataset vintage="2012" 
+  geographyLink="http://api.census.gov/data/2012/acs5/geography.xml"
+  variablesLink="http://api.census.gov/data/2012/acs5/variables.xml" 
+  tagsLink="http://api.census.gov/data/2012/acs5/tags.xml" 
+  examplesLink="http://api.census.gov/data/2012/acs5/examples.xml" 
+  documentationLink="http://www.census.gov/developers/" 
+  pod:webService="http://api.census.gov/data/2012/acs5" isAggregate="true" 
+  pod:accessLevel="public" 
+  dcat:contactPoint="Census Bureau Call Center" 
+  dct:identifier="2012acs5" 
+  pod:mbox="pio@census.gov" 
+  dct:publisher="US Census Bureau" 
+  dct:spatial="US" 
+  dct:temporal="2012">
+<dataset-name> <part name="acs5"/> </dataset-name>
+<dct:title>2012 American Community Survey: 5-Year Estimates</dct:title>
+<pod:bureauCode> 006:07 </pod:bureauCode>
+<dct:description>
+The American Community Survey (ACS) is a nationwide survey...
+</dct:description>
+<pod:reference link="http://www.census.gov/developers/"/>
+</dataset>
+\end{verbatim}
+After the user has selected the dataset of interest, they will need to lookup what variables are available for that dataset.  The JSON and XML master index of datasets contain the location of $variables.json$ and $variables.xml$ respectively which list available variables available for that dataset.  Available variables are organized into tables referred to as "concepts"; a "concept" is a combination of factors.  For example, "Health Insurance Coverage Status by Sex by Age" is a concept from the 2012 ACS.  Although health insurance coverage, sex and age are all different factors, this "concept" contains information that links these three factors together. \\
+\\
+Within each table there are sub-tables that provide information on different levels of each of the factors.  For example, under the "Health Insurance Coverage Status by Sex by Age" concept there is a table for males under 6 with health insurance.  For this concept there are tables for each combination of levels for sex (male, female), age group (under 6, 6 to 17, 18 to 24, 25 to 34, 35 to 44, 45 to 54, 55 to 64, 65 to 74 and 75 and over) and health insurance coverage (with and without health insurance).  Additionally there are a number of total columns: total number of males, total number of females and totals for males/females in each age group.  For more details on how the data is organized within this table structure see the next section.\\
+\\
+To lookup what variables are available, the $variables.json$ and $variables.xml$ files contain a list of all sub-tables along with a description.  The JSON formatted $variables.json$ is formatted as follows:
+\begin{verbatim}
+"B27001_056E": {
+  "label": "Female:!!75 years and over:!!With health insurance coverage",
+  "concept": "B27001.  Health Insurance Coverage Status by Sex by Age"
+},
+\end{verbatim}
+This describes sub-table 056E of concept B27001.  This is a table of 75 and older females with health insurance.  The associated XML formatted version is formatted as follows:
+\begin{verbatim}
+<var xml:id="B27001_056E" 
+  label="Female:!!75 years and over:!!With health insurance coverage" 
+  concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
+\end{verbatim}
 
 \section{Requesting Data and Table Structure}
-%explain get queries here
+To actually get data from the census bureau online API we need to construct a proper HTTP GET request.  A valid GET request is formed through a constructed web URL and we specify which dataset, year, variable and geographies that we are requesting.  The basic structure of an HTTP GET request for the decennial census and for the ACS is as follows:
+\begin{verbatim}
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
+\end{verbatim}
+
 
 \section{Limitations}
 The dataset used by Morgan, Cetinkaya-Rundel and Stangl in "Taking a Chance in the Classroom: The American Community Survey" is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
@@ -147,7 +223,7 @@ print(xtable(head(acsdat)))
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
 @
-Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See figure \ref{fig:table} for a small subset of the data used by Morgan et al.
+Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See figure \ref{fig:table} for a small subset of the data used by Morgan et al.\\
 <<example, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Health care data from online API'>>=
 library(acs)
 library(xtable)
@@ -159,7 +235,7 @@ tab1 = xtable(head(dat@estimate[,1:5]))
 digits(tab1) = rep(0,6)
 print(tab1)
 @
-By contrast the online API does not provide individual level data.  When we perform a get query we must specify what geographic level of detail we want.  In table \ref{fig:example} we specify state level summaries for table variable B27001.  Table variable B27001 is related to health insurance coverage status for various age groups grouped by gender.  Each column in table \ref{fig:example} is a sub-table on B27001.
+By contrast the online API does not provide individual level data.  When we perform a HTTP GET request we must specify what geographic level of detail we want.  In table \ref{fig:example} we specify state level summaries for table variable B27001.  Table variable B27001 is related to health insurance coverage status for various age groups grouped by gender.  Each column in table \ref{fig:example} is a sub-table on B27001.
 
 <<var, echo=FALSE>>=
 #example1: (chance #3, #5)
