@@ -1,6 +1,9 @@
 \documentclass{article}
 \usepackage{url}
 \usepackage{amsfonts}
+\usepackage[backend=bibtex, natbib=true]{biblatex}
+\addbibresource{references.bib}
+
 \usepackage[margin=1in]{geometry}
 \setlength{\parindent}{0in}
 
@@ -16,7 +19,7 @@ The ACS is an ongoing yearly survey that collects additional demographic variabl
 \\
 Both the decennial survey and the ACS data are used in part by federal, state and local agencies to allocate state funding and for policy decisions.  The Census Bureau has also released some of this data for public use.  Many of the data sets are available directly in a compressed format from the Census Bureau's FTP site: \url{http://ftp2.census.gov/}.  Since 2012, the Census Bureau has also included an online developer's API in order to improve accessibility of the ACS and decennial census datasets.  The Census Bureau's online API can be accessed online: \url{http://api.census.gov}.\\
 \\
-We will discuss how the ACS data is structured when we request data and how to access data from the Census Bureau's online developer's API.  We will also discuss what kind of variables are available and some limitations with the API.  We will use "Taking a Chance in the Classroom: The American Community Survey", an article by Morgan, Cetinkaya-Rundel and Stangl as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access and inconsistencies in the database.
+We will discuss how the ACS data is structured when we request data and how to access data from the Census Bureau's online developer's API.  We will also discuss what kind of variables are available and some limitations with the API.  We will base this discussion on a paper by \citet{stangl:2013} as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access and inconsistencies in the database.
 
 \section{Geography}
 The Census Bureau has a very sophisticated system of hierarchy for geography.  For the ACS, at the top level there is the entire nation, followed by region, division, state, county, county-subdivision, tract, block group, place, congressional district, zip code area, school district and a few other geographic divisions.  See table \ref{tab:geolist} for a complete table of geographies available on the census API for the 2012 ACS.\\
@@ -313,4 +316,6 @@ qplot(long, lat, data = final, group=group, order=order, geom="polygon", fill=ra
 @
 
 \section{Conclusion}
+\printbibliography
+
 \end{document}
