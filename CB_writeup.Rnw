@@ -46,7 +46,29 @@ Similarly requesting data from the 2011 ACS 3-year dataset would require the fol
 \begin{verbatim}
 http://api.census.gov/data/2011/acs3?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
 \end{verbatim}
-$[$GEOGRAPHY$]$ describes the geographic region and $[$VARIABLES$]$ specifies the demographic variables of interest.  Specifying a correct geographic region and search for available demographic variables require a more detailed knowledge of how the census datasets are organized.  We discuss geographies in section \ref{sec:geo} and variables in section \ref{sec:var}.  We also discuss how the data is formatted and structured in section \ref{sec:var}.
+$[$GEOGRAPHY$]$ describes the geographic region of interest.  We can choose varying levels of geographic areas including the entire United States:
+\begin{verbatim}
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=us:*
+\end{verbatim}
+We can also specify states using varying levels of detail:
+\begin{verbatim}
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:*
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:06
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:01,06
+\end{verbatim}
+The above HTTP GET requests specify all states, a specific state (California), or multiple states (Alabama and California) respectively.  Some geographic regions are nested within larger regions and we can specify the containing region.  For example, states contain counties and we can form an HTTP GET request for a certain county within a specific state:
+\begin{verbatim}
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=County:*&in=state:06
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=county:037&in=state:06
+\end{verbatim}
+In the above HTTP GET requests we specify all counties in California and Los Angeles County in California respectively.  Finally, there are even smaller geographic regions that we can specify multiple containing regions.  For example, census tracts are within counties and states.  We can specify a certain census tract within a county:
+\begin{verbatim}
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=tract:*&in=state:06+county037:
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=tract:101110&in=state:06+county037:
+\end{verbatim}
+In the above HTTP GET requests we specify all census tracts within Los Angeles County and census tract 1011.10 within Los Angeles County respectively.\\
+\\
+Specifying a correct geographic region or combination of regions and specifying available demographic variables ($[$VARIABLES$]$) require a more detailed knowledge of how the census datasets are organized.  We discuss geographies in section \ref{sec:geo} and variables in section \ref{sec:var}.  We also discuss how the data is formatted and structured in section \ref{sec:var}.
 
 \section{Geography}
 \label{sec:geo}
@@ -98,7 +120,7 @@ Summary Level & Description \\
 \label{tab:geolist}
 \end{table}
 
-From table \ref{tab:geolist}, the hierarchy for geographic regions is very specific in the combinations of geographic regions that we can specify.  Different ACS datasets might have slightly different geographic regions available.  Fortunately, each dataset available on the Census Bureau online API include an associated geography file formatted in JSON and a similar file formatted in XML.  JSON stands for JavaScript Object Notation and it is a lightweight machine format for sending data.  JSON is structured using name-value pairs and is also designed to be human-readable.  There are many libraries to generate and process JSON.  The JSON formatted file for geographies has the following format:
+From table \ref{tab:geolist}, the hierarchy for geographic regions is very specific in the combinations of geographic regions that we can specify.  Different ACS datasets might have slightly different geographic regions available.  For example, in the 2010 decennial census if our geographic area is zip code tabulation areas then we are required to specify states.  By contrast, the 2012 ACS 5-year dataset has zip code tabulation areas but we do not need to specify states.  The 2010 ACS 5-year dataset simply does not have zip code tabulation areas available.Fortunately, each dataset available on the Census Bureau online API include an associated geography file formatted in JSON and a similar file formatted in XML.  JSON stands for JavaScript Object Notation and it is a lightweight machine format for sending data.  JSON is structured using name-value pairs and is also designed to be human-readable.  There are many libraries to generate and process JSON.  The JSON formatted file for geographies has the following format:
 \begin{verbatim}
 {
   "name": "tract",
@@ -109,16 +131,7 @@ From table \ref{tab:geolist}, the hierarchy for geographic regions is very speci
   "optionalWithWCFor": "county"
 }
 \end{verbatim}
-This JSON file specifies that for census tract level geography we are always required to specify a state.  We are required to specify a county in certain cases.  For a valid HTTP GET request corresponding to the above JSON information the $[$GEOGRAPHY$]$ must be formatted as follows:
-\begin{verbatim}
-tract:*&in=state:01
-tract:*&in=state:01+county:01
-\end{verbatim}
-In the first GET request we are requesting data for all census tracts in Alabama.  The second GET request is for all census tracts in Autauga County, Alabama.  Due to how census tracts are labelled, if we are interested in a specific census tract we must specify both a state and county:
-\begin{verbatim}
-tract:020400&in=state:01+county:01
-\end{verbatim}
-In this GET request we are requesting data for census tract 020400.  Note we must specify both state and county because there can be multiple census tracts labelled "020400" among different counties and states.\\
+This JSON file specifies that for census tract level geography we are always required to specify a state.  We are required to specify a county in certain cases.  If we want all census tracts within a state then we are required to specify state.  If we want all census tracts within a county then we need to specify a state and a county.  If we want a specific census tract, we must specify both a county and a state.  This is due to how census tracts are labelled; it's possible that census tracts located in different states and counties have the same label.\\
 \\
 The same geographic information is also available in XML.  XML stands for Extensible Markup Language and is similar in structure to the HTML format used for webpages.  XML is another format for sending and storing data.  It is formatted in a tree-like structure with a hierarchy of categories with associated values.  Here is the same geographic area information formatted in XML:
 \begin{verbatim}
@@ -127,7 +140,7 @@ The same geographic information is also available in XML.  XML stands for Extens
   <requires name="county" is-optional-with-wcfor="true"/>
 </fips>
 \end{verbatim}
-In the following examples, we will examine various geographies available from the online API and their corresponding HTTP GET requests.  We will use the United States as a whole and various geographic areas within the state of California for our examples.\\
+In the following examples, we will examine various geographies available from the online API and see which combinations of geographic regions are required.  We will use the United States as a whole and various geographic areas within the state of California for our examples.\\
 <<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE, fig.cap='California Selected'>>=
 library(ggplot2)
 states.map = map_data("state")
@@ -135,7 +148,7 @@ states.map$CA = states.map$region=="california"
 qplot(long, lat, data=states.map, group=group, order=order, geom="polygon", fill=CA) + 
   theme(legend.position = "none")
 @
-At the top of the hierarchy we can view data at the country level; this is data aggregated among all states and corresponds to summary level 010 from table \ref{tab:geolist}.  Below that we can view data by state.  At the state level we can view data for all states or select a particular state; this is summary level 040.  In figure \ref{fig:state} we have selected California with the and this corresponds to a $[$GEOGRAPHY$]$ of \textit{state:06}.\\
+At the top of the hierarchy we can view data at the country level; this is data aggregated among all states and corresponds to summary level 010 from table \ref{tab:geolist}.  Below that we can view data by state.  At the state level we can view data for all states or select a particular state; this is summary level 040.  In figure \ref{fig:state} we have selected California.\\
 
 <<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, cache=TRUE, fig.cap='Los Angeles county selected'>>=
 counties.map = map_data("county")
@@ -144,7 +157,7 @@ counties.map[counties.map$region=="california" & counties.map$subregion=="los an
 qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fill=factor(CA)) + 
   theme(legend.position = "none")
 @
-Below states we can select counties and census tracts.  At the county level, after we specify California we can look at counties within California (summary level 050).  We can see from figure \ref{fig:county} that we have selected Los Angeles county within California state.  For a corresponding HTTP GET request the $[$GEOGRAPHY$]$ is \textit{county:037$\&$in=state:06}.  There are a few other geographic regions we can subset by within a state such as ZIP code tabulation area; we could have selected 90210 which corresponds to Beverly Hills, California.  The required $[$GEOGRAPHY$]$ for selecting 90210 is \textit{zip+code+tabulation+area:90210}.\\
+Below states we can select counties and census tracts.  At the county level, after we specify California we can look at counties within California (summary level 050).  We can see from figure \ref{fig:county} that we have selected Los Angeles county within California state.  There are a few other geographic regions we can subset by within a state such as ZIP code tabulation area; we could have selected 90210 which corresponds to Beverly Hills, California. \\
 <<censustractstate, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.show='hold', fig.cap='Pasadena county subdivision selected'>>=
 library(maptools)
 ca.tracts = readShapeSpatial("tl_2013_06_cousub.shp")
@@ -165,8 +178,6 @@ Although all the entries in table \ref{tab:geolist} are valid geographic combina
 Another complication is that not all geographic divisions are compatible.  That is to say that some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative districts or county borders.  <EXAMPLE HERE>
 %Insert Iowa example here
 \\
-\\
-Please note that certain datasets might not have available all geographies and might require a different specification of geography.  For example, in the 2010 decennial census if our geographic area is zip code tabulation areas then we are required to specify states.  By contrast, the 2012 ACS 5-year dataset has zip code tabulation areas but we do not need to specify states.  The 2010 ACS 5-year dataset simply does not have zip code tabulation areas available.\\
 \\
 For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset or the XML or JSON geography files.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}, the XML file is located at \url{http://api.census.gov/data/2012/acs5/geography.xml} and the JSON file is located at \url{http://api.census.gov/data/2012/acs5/geography.json}.    
 
@@ -254,12 +265,12 @@ Using the Census Bureau's online API for these exercises presents us three main 
 <<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
-print(xtable(head(acsdat)))
+print(xtable(head(acsdat), label="tab:table", caption="Random subset of 2010 ACS public use microdata sample"))
 #structure of data isn't a dataframe but multiple tables
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
 @
-Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See figure \ref{fig:table} for a small subset of the data used by Morgan et al.\\
+Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See table \ref{tab:table} for a small subset of the data used by Morgan et al.\\
 <<example, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Health care data from online API'>>=
 library(acs)
 library(xtable)
@@ -267,7 +278,7 @@ states = geo.make(state = "*")
 dat = acs.fetch(endyear = 2012, span = 5, geography = states, table.number="B27001")
 dat2 = acs.fetch(endyear = 2012, span = 5, geography = states, table.number="B27001", col.names="pretty")
 
-tab1 = xtable(head(dat@estimate[,1:5]))
+tab1 = xtable(head(dat@estimate[,1:5]), label="fig:example", caption="Health Insurance Coverage information from Online API")
 digits(tab1) = rep(0,6)
 print(tab1)
 @
