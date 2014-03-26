@@ -24,47 +24,47 @@ We will discuss how the ACS data is structured when we request data and how to a
 \section{Requesting Data}
 To access data from the census bureau online API we need to construct a proper HTTP GET request.  A valid GET request is formed through a constructed web URL and we specify which dataset, year, variable and geographies that we are requesting.  The basic structure of an HTTP GET request for the decennial census and for the ACS is as follows:
 \begin{verbatim}
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
 \end{verbatim}
-$[$DEVELOPER'S KEY$]$ is an id code required to perform a valid GET request.  A developer's key uniquely identifies everyone who requests data from the API.  Requesting a key can be done by registering at \url{http://www.census.gov/developers/tos/key_request.html}.\\
+$[$KEY$]$ is an id code required to perform a valid GET request.  A developer's key uniquely identifies everyone who requests data from the API.  Requesting a key can be done by registering at \url{http://www.census.gov/developers/tos/key_request.html}.\\
 \\
-$[$YEAR$]$ and $[$DATASET$]$ specify the dataset and year of the data requested.  The available datasets include the decennial census and the ACS.  The ACS datasets are available in 1-year, 3-year and 5-year timeframes.  The $[$YEAR$]$ variable for the ACS datasets indicates the final year in the timeframe.  For example, the 2012 5-year ACS dataset this is the ACS dataset that spans 2008-2012 and the 2012 3-year ACS dataset is the ACS dataset that spans 2010-2012.  For the decennial census the $[$YEAR$]$ indicates the year the census data was collected.  When we request a $[$DATASET$]$ we use abbreviations for the dataset we want: the ACS 5-year dataset is $acs5$.  See table \ref{tab:datasettable} to see which timeframes are available for each dataset and the abbreviations.\\
+$[$YEAR$]$ and $[$DATASET$]$ specify the dataset and year of the data requested.  The available datasets include the decennial census and the ACS.  The ACS datasets are available in 1-year, 3-year and 5-year timeframes.  The $[$YEAR$]$ variable for the ACS datasets indicates the final year in the timeframe.  For example, the 2012 5-year ACS dataset this is the ACS dataset that spans 2008-2012 and the 2012 3-year ACS dataset is the ACS dataset that spans 2010-2012.  For the decennial census the $[$YEAR$]$ indicates the year the census data was collected.  When we request a $[$DATASET$]$ we use abbreviations for the dataset we want: the ACS 5-year dataset is $acs5$.  See table \ref{tab:datasettable} to see which timeframes are available for each dataset and the associated id assigned by the census bureau.\\
 <<datasettable, echo=FALSE, warning=FALSE, message=FALSE, results='asis'>>=
 library(xtable)
 sets = data.frame(DATASETS = c("Decennial Census", "ACS 5-year", "ACS 3-year", "ACS 1-year"),
                   YEAR = c("1990, 2000, 2010", "2010, 2011, 2012", "2011, 2012", "2011, 2012"),
-                  abbr = c("sf1", "acs5", "acs3", "acs1"))
+                  ID = c("sf1", "acs5", "acs3", "acs1"))
 
 tabl = xtable(sets, label="tab:datasettable", caption="Datasets and Years")
 print(tabl, include.rownames=FALSE)
 @
 If we wanted to request some data from the 2010 decennial census we would format our HTTP GET request as follows:
 \begin{verbatim}
-http://api.census.gov/data/2010/sf1?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
+http://api.census.gov/data/2010/sf1?key=[KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
 \end{verbatim}
 Similarly requesting data from the 2011 ACS 3-year dataset would require the following HTTP GET request:
 \begin{verbatim}
-http://api.census.gov/data/2011/acs3?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
+http://api.census.gov/data/2011/acs3?key=[KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
 \end{verbatim}
 $[$GEOGRAPHY$]$ describes the geographic region of interest.  We can choose varying levels of geographic areas including the entire United States:
 \begin{verbatim}
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=us:*
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=us:*
 \end{verbatim}
 We can also specify states using varying levels of detail:
 \begin{verbatim}
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:*
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:06
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:01,06
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=state:*
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=state:06
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=state:01,06
 \end{verbatim}
 The above HTTP GET requests specify all states, a specific state (California), or multiple states (Alabama and California) respectively.  Some geographic regions are nested within larger regions and we can specify the containing region.  For example, states contain counties and we can form an HTTP GET request for a certain county within a specific state:
 \begin{verbatim}
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=county:*&in=state:06
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=county:037&in=state:06
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=county:*&in=state:06
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=county:037&in=state:06
 \end{verbatim}
 In the above HTTP GET requests we specify all counties in California and Los Angeles County in California respectively.  Finally, there are even smaller geographic regions that we can specify multiple containing regions.  For example, census tracts are within counties and states.  We can specify a certain census tract within a county:
 \begin{verbatim}
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=tract:*&in=state:06+county037:
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=tract:101110&in=state:06+county037:
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=tract:*&in=state:06+county037:
+http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=tract:101110&in=state:06+county037:
 \end{verbatim}
 In the above HTTP GET requests we specify all census tracts within Los Angeles County and census tract 1011.10 within Los Angeles County respectively.\\
 \\
@@ -141,7 +141,7 @@ The same geographic information is also available in XML.  XML stands for Extens
 </fips>
 \end{verbatim}
 In the following examples, we will examine various geographies available from the online API and see which combinations of geographic regions are required.  We will use the United States as a whole and various geographic areas within the state of California for our examples.\\
-<<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.width=5, cache=TRUE, fig.cap='California Selected'>>=
+<<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.width=5, cache=TRUE, fig.cap='California Selected', fig.align='center'>>=
 library(ggplot2)
 states.map = map_data("state")
 states.map$CA = states.map$region=="california"
@@ -150,7 +150,7 @@ qplot(long, lat, data=states.map, group=group, order=order, geom="polygon", fill
 @
 At the top of the geography hierarchy we can form valid HTTP GET requests specifying a country-wide geography; this is data aggregated among all states and corresponds to summary level 010 from table \ref{tab:geolist}.  Below that we specify a state-level geography.  At this level we can view data for all states or select a particular state; this is summary level 040.  In figure \ref{fig:state} we have selected California with the following HTTP GET request: \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:06}.\\
 
-<<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.width=5, cache=TRUE, fig.cap='Los Angeles county selected'>>=
+<<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.width=5, cache=TRUE, fig.cap='Los Angeles county selected',  fig.align='center'>>=
 counties.map = map_data("county")
 counties.map$CA = as.numeric(counties.map$region=="california")
 counties.map[counties.map$region=="california" & counties.map$subregion=="los angeles",]$CA = 2
@@ -158,7 +158,7 @@ qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fi
   theme(legend.position = "none")
 @
 Below states we can select counties and census tracts.  At the county level, after we specify California we can look at counties within California (summary level 050).  We can see from figure \ref{fig:county} that we have selected Los Angeles county within California state.  This corresponds to an HTTP GET request of the following form: \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=county:037&in=state:06}.  There are a few other geographic regions we can subset by within a state such as ZIP code tabulation area; for example we can select 90210 which corresponds to Beverly Hills, California.\\
-<<censustractstate, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.show='hold', fig.cap='Pasadena county subdivision selected'>>=
+<<censustractstate, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.show='hold', fig.cap='Pasadena county subdivision selected',  fig.align='center'>>=
 library(maptools)
 ca.tracts = readShapeSpatial("tl_2013_06_cousub.shp")
 ca.geo = fortify(ca.tracts)
@@ -258,6 +258,7 @@ This describes sub-table 056E of concept B27001.  This is a table of 75 and olde
   concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
 \end{verbatim}
 
+
 \section{Limitations}
 The dataset used by \citet{stangl:2013} is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
 \\
@@ -279,7 +280,7 @@ dat = acs.fetch(endyear = 2012, span = 5, geography = states, table.number="B270
 dat2 = acs.fetch(endyear = 2012, span = 5, geography = states, table.number="B27001", col.names="pretty")
 
 dat.table = data.frame(dat@estimate[,1:5])
-names(dat.table) = c("Total", "M Total", "M<6", "M<6 w/insurance", "M<6 w/o insurance")
+names(dat.table) = c("Total", "M Total", "M <6", "M <6 w/insurance", "M <6 w/o insurance")
 
 tab1 = xtable(head(dat.table), label="fig:example", caption="Health Insurance Coverage information from Census API.  Each of the M columns indicate male, subsequent numbers indicate age; there are corresponding F columns for females that is not shown to conserve space.")
 digits(tab1) = rep(0,6)
@@ -287,7 +288,7 @@ print(tab1)
 @
 By contrast the online API does not provide individual specific data.  When we perform a HTTP GET request we must specify what geographic level of detail we want.  The geographic level of detail does not go below the county subdivision or census tract level.  Instead of individual specific data we have data that has been aggregated for an entire geographic region.  This is likely due to privacy reasons; if we have individual specific data for a dozen demographic variables along with geographic information it might be possible to reveal this individual's identity.  \\
 \\
-In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table is referred to as a $concept$ and each column in table \ref{fig:example} is referred to as a $label$.  The first label of each concept is an overall total subsequent labels are subsets of this overall total.  We've conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each  with the table name $B27001\_001$, $B27001\_002$ etc.\\
+In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table is referred to as a $concept$ and each column in table \ref{fig:example} is referred to as a $label$.  The first label of each concept is an overall total subsequent labels are subsets of this overall total.  We've conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: $B27001\_001$, $B27001\_002$ etc.\\
 \\
 The way this data is organized is not tidy $<$include hadley tidy data reference$>$.  Instead it appears that the columns contain additional categorical information: gender, age and insurance.  In table \ref{fig:tidy} we have tidied up the data so that each row is an observation and each column is a variable.  Originally table B27001 contains a number of $total$ columns: overall total, total number of males, total number of females, and within each gender a total number of people within an age group.  In reshaping this data, we felt that these total columns were redundant once the data is in a tidy form.  
 <<melted, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis">>=
