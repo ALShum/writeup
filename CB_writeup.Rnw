@@ -394,6 +394,7 @@ print(tab2)
 <<NY, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 library(plyr)
 library(acs)
+
 NYC = geo.make(state="NY", county=c("New York County", "Bronx County", "Kings County", "Queens County", "Richmond County"), tract="*")
 f.nyc = acs.fetch(endyear = 2012, span = 5, geography = NYC, table.name = c("In Combination With One Or More Other Races"), col.names="pretty")
 
@@ -430,7 +431,7 @@ final$race = unlist(apply(final[,19:24], 1, function(x){
   if(sum(is.na(x)) == length(19:24)) return("NA")
   else return(names(which.max(x)))
 }))
-qplot(long, lat, data = final, group=group, order=order, geom="polygon", fill=race)
+qplot(long, lat, data = final, group=group, order=order, geom="polygon", fill=race) + theme_bw() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank())
 @
 
 \section{Conclusion}
