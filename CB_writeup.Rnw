@@ -146,18 +146,18 @@ library(ggplot2)
 states.map = map_data("state")
 states.map$CA = states.map$region=="california"
 qplot(long, lat, data=states.map, group=group, order=order, geom="polygon", fill=CA, size=1) + 
-  theme(legend.position = "none")
+  theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
 @
-At the top of the geography hierarchy we can form valid HTTP GET requests specifying a country-wide geography; this is data aggregated among all states and corresponds to summary level 010 from table \ref{tab:geolist}.  Below that we specify a state-level geography.  At this level we can view data for all states or select a particular state; this is summary level 040.  In figure \ref{fig:state} we have selected California with the following HTTP GET request: \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=state:06}.\\
+At the top of the geography hierarchy we can form valid HTTP GET requests specifying a country-wide geography; this is data aggregated among all states and corresponds to summary level 010 from table \ref{tab:geolist}.  Below that we specify a state-level geography.  At this level we can view data for all states or select a particular state; this is summary level 040.  In figure \ref{fig:state} we have selected California with the following HTTP GET request: \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=state:06}.\\
 
 <<county, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.width=5, cache=TRUE, fig.cap='Los Angeles county selected',  fig.align='center'>>=
 counties.map = map_data("county")
 counties.map$CA = as.numeric(counties.map$region=="california")
 counties.map[counties.map$region=="california" & counties.map$subregion=="los angeles",]$CA = 2
 qplot(long, lat, data=counties.map, group=group, order=order, geom="polygon", fill=factor(CA)) + 
-  theme(legend.position = "none")
+  theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
 @
-Below states we can select counties and census tracts.  At the county level, after we specify California we can look at counties within California (summary level 050).  We can see from figure \ref{fig:county} that we have selected Los Angeles county within California state.  This corresponds to an HTTP GET request of the following form: \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[DEVELOPER'S KEY]&get=[VARIABLES]&for=county:037&in=state:06}.  There are a few other geographic regions we can subset by within a state such as ZIP code tabulation area; for example we can select 90210 which corresponds to Beverly Hills, California.\\
+Below states we can select counties and census tracts.  At the county level, after we specify California we can look at counties within California (summary level 050).  We can see from figure \ref{fig:county} that we have selected Los Angeles county within California state.  This corresponds to an HTTP GET request of the following form: \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=county:037&in=state:06}.  There are a few other geographic regions we can subset by within a state such as ZIP code tabulation area; for example we can select 90210 which corresponds to Beverly Hills, California.\\
 <<censustractstate, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.show='hold', fig.cap='Pasadena county subdivision selected',  fig.align='center'>>=
 library(maptools)
 ca.tracts = readShapeSpatial("tl_2013_06_cousub.shp")
@@ -166,19 +166,37 @@ ca.data = ca.tracts@data
 ca.geo$LA = 0
 ca.geo[ca.geo$id %in% as.numeric(row.names(ca.data[which(ca.data$COUNTYFP=="037"),])),]$LA = 1
 ca.geo[ca.geo$id == 13,]$LA = 2
+
 qplot(long, lat, data=ca.geo, group=group, order=order, geom="polygon", fill=factor(LA)) + 
-  theme(legend.position = "none") 
-qplot(long, lat, data=subset(ca.geo, LA > 0), group=group, order=order, geom="polygon", fill=factor(LA)) + theme(legend.position = "none")
+  theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
+
+qplot(long, lat, data=subset(ca.geo, LA > 0), group=group, order=order, geom="polygon", fill=factor(LA)) + theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
 @
 
 There are a number of valid geographic entities below the state and county level.  For example, there are school districts, county subdivision, metropolitan statistical areas and legislative districts.  In order to form a valid HTTP GET request, smaller geographic divisions often require us to specify the containing state or county.  In figure \ref{fig:censustractstate} we have selected Pasadena, a county subdivision, within Los Angeles County.  For county subdivisions we cannot simply specify Pasadena and we also cannot specify just California and Pasadena; subdivision alone and state-subdivision are not a valid geographic combinations.  Instead, we must specify California, Los Angeles County and then Pasadena.  We can see from table \ref{tab:geolist} that state-county-subdivision is a valid summary level. \\
 \\
 Although all the entries in table \ref{tab:geolist} are valid geographic combinations, some parts of geographic combinations may be optional.  For example, if we wanted census tracts we need to specify state and county (summary level 140).  In contrast to county subdivisions where we needed to specify both state and county, for census tracts specifying county is optional.  This means that state-tract is also a valid geographic combination.  It is best to refer to each datasets JSON or XML file for geographic compatabilities.\\
 \\
-Due to the sheer number of different geographic entities there are geographic entities which cannot be used together for valid HTTP GET requests.  Some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative districts or county borders.  <EXAMPLE HERE>
-%Insert Iowa example here
-\\
-\\
+Due to the sheer number of different geographic entities there are geographic entities which cannot be used together for valid HTTP GET requests.  Some of the smaller geographic divisions are not necessarily nested in one of the larger geographic divisions; for example, ZIP code areas are generally used by the United States Postal Service and might span different counties or census tracts.  Additionally, Legislative districts do not line up with county borders and school districts often do not line up with either legislative districts or county borders.  See figure \ref{fig:iowa} to see a comparison of different geographic entities within Iowa.\\
+
+<<iowa, echo=FALSE, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.cap='Iowa State House Districts (top left), Iowa State Senate Districts (top right), Iowa Unified School Districts (bottom left), Iowa Counties (bottom right)',  fig.align='center', fig.show='hold'>>=
+iowa.ld.lower = readShapeSpatial("tl_2013_19_sldl.shp")
+iowa.ld.upper = readShapeSpatial("tl_2013_19_sldu.shp")
+iowa.sd = readShapeSpatial("tl_2013_19_unsd.shp")
+
+iowa.low.geo = fortify(iowa.ld.lower)
+iowa.up.geo = fortify(iowa.ld.upper)
+iowa.sd.geo = fortify(iowa.sd)
+
+qplot(long, lat, data=iowa.low.geo, group=group, order=order, geom="path") + theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
+
+qplot(long, lat, data=iowa.up.geo, group=group, order=order, geom="path") + theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
+
+qplot(long, lat, data=iowa.sd.geo, group=group, order=order, geom="path") + theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
+
+qplot(long, lat, data=subset(map_data('county'), region=="iowa"), group=group, order=order, geom="path") + theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none")
+@
+
 For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset or the XML or JSON geography files.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}, the XML file is located at \url{http://api.census.gov/data/2012/acs5/geography.xml} and the JSON file is located at \url{http://api.census.gov/data/2012/acs5/geography.json}.    
 
 \section{Finding Data Sets and Tables Structure}
@@ -240,24 +258,47 @@ The American Community Survey (ACS) is a nationwide survey...
 <pod:reference link="http://www.census.gov/developers/"/>
 </dataset>
 \end{verbatim}
-After the user has selected the dataset of interest, they will need to lookup what variables are available for that dataset.  The JSON and XML master index of datasets contain the location of $variables.json$ and $variables.xml$ respectively which list available variables available for that dataset.  Available variables are organized into tables referred to as "concepts"; a "concept" is a combination of factors.  For example, "Health Insurance Coverage Status by Sex by Age" is a concept from the 2012 ACS.  Although health insurance coverage, sex and age are all different factors, this "concept" contains information that links these three factors together. \\
+After the user has selected the dataset of interest, they will need to lookup what variables are available for that dataset.  The JSON and XML master index of datasets contain the location of $variables.json$ and $variables.xml$ respectively which list available variables available for that dataset.  Available variables are organized into tables referred to as "concepts"; a "concept" is a combination of factors.  For example, "Health Insurance Coverage Status by Sex by Age" is a concept from the 2012 ACS.  Within each "concept" are "labels"; a "label" is a combination of levels for the factors within a concept.\\
 \\
-Within each table there are sub-tables that provide information on different levels of each of the factors.  For example, under the "Health Insurance Coverage Status by Sex by Age" concept there is a table for males under 6 with health insurance.  For this concept there are tables for each combination of levels for sex (male, female), age group (under 6, 6 to 17, 18 to 24, 25 to 34, 35 to 44, 45 to 54, 55 to 64, 65 to 74 and 75 and over) and health insurance coverage (with and without health insurance).  Additionally there are a number of total columns: total number of males, total number of females and totals for males/females in each age group.\\
+Within each concept there are multiple labels that provide information on different levels of each of the factors.  For example, the concept "Health Insurance Coverage Status by Sex by Age" contains a label for males over 70 with health insurance.  This concept also contains labels for each combination of gender (male, female), age group (under 6, 6 to 17, 18 to 24, 25 to 34, 35 to 44, 45 to 54, 55 to 64, 65 to 74 and 75 and over) and health insurance coverage (with and without health insurance).  Some of the labels may also contain summary information in the form of totals.  For this concept there are labels for total number of males, total number of females and totals for males/females in each age group.\\
 \\
-To lookup what variables are available, the $variables.json$ and $variables.xml$ files contain a list of all sub-tables along with a description.  The JSON formatted $variables.json$ is formatted as follows:
+To lookup what variables are available, the $variables.json$ and $variables.xml$ files contain a list of all concepts and labels along with a description.  The JSON formatted $variables.json$ is formatted as follows:
 \begin{verbatim}
 "B27001_056E": {
   "label": "Female:!!75 years and over:!!With health insurance coverage",
   "concept": "B27001.  Health Insurance Coverage Status by Sex by Age"
 },
 \end{verbatim}
-This describes sub-table 056E of concept B27001.  This is a table of 75 and older females with health insurance.  The associated XML formatted version is formatted as follows:
+This describes label 056E of concept B27001.  This is a table of 75 and older females with health insurance.  The associated XML formatted version is formatted as follows:
 \begin{verbatim}
 <var xml:id="B27001_056E" 
   label="Female:!!75 years and over:!!With health insurance coverage" 
   concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
 \end{verbatim}
+Once we have found the concepts or labels we are interested in, we can form a valid HTTP GET request using the concept-label ID.  For the health insurance coverage status by sex by age concept we can request the 75 and older female with health insurance label using the concept-label ID $B27001\_056E$.  A valid HTTP GET request for this is \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=B27001_056E&for=[GEOGRAPHY]}.
 
+<<dataexample, echo=FALSE, cache=TRUE, results='asis'>>=
+library(rjson)
+library(plyr)
+url = "http://api.census.gov/data/2012/acs5?key=b59354d11f96afaa8cbd17c5f9e5cdf7d057fc1c&get=B27001_036M,B27001_037M,NAME&for=county:*&in=state:06"
+js = fromJSON(file=url)
+df = ldply(js)
+names(df) = df[1,]
+df = df[-1,]
+
+print(xtable(head(df), label="tab:df", caption="Health insurance status of women 75 years and older in California by county from 2012 ACS 5-year data"))
+@
+
+Table \ref{tab:df} is information on health insurance for women 75 and older in California from the 2012 ACS 5-year data listed by county.  The HTTP GET request for this is \url{http://api.census.gov/data/2012/acs5?key=[KEY]&get=B27001_056E,B27001_057E,NAME&for=county:*&in=state:06}.  Labels 056E and 057E are labels for women 75 and older with health insurance and women 75 and older without health insurance respectively.  The result of our HTTP GET request is a JSON formatted file in the following format:
+\begin{verbatim}
+[["B27001_036M","B27001_037M","NAME","state","county"],
+["668","144","Alameda County, California","06","001"],
+["15","69","Alpine County, California","06","003"],
+["88","131","Amador County, California","06","005"],
+["238","127","Butte County, California","06","007"],
+["45","102","Calaveras County, California","06","009"],
+["98","26","Colusa County, California","06","011"],
+\end{verbatim}
 
 \section{Limitations}
 The dataset used by \citet{stangl:2013} is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
@@ -288,9 +329,11 @@ print(tab1)
 @
 By contrast the online API does not provide individual specific data.  When we perform a HTTP GET request we must specify what geographic level of detail we want.  The geographic level of detail does not go below the county subdivision or census tract level.  Instead of individual specific data we have data that has been aggregated for an entire geographic region.  This is likely due to privacy reasons; if we have individual specific data for a dozen demographic variables along with geographic information it might be possible to reveal this individual's identity.  \\
 \\
-In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table is referred to as a $concept$ and each column in table \ref{fig:example} is referred to as a $label$.  The first label of each concept is an overall total subsequent labels are subsets of this overall total.  We've conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: $B27001\_001$, $B27001\_002$ etc.\\
+In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table and as previously mentioned we refer to this as a $concept$ and each column in table \ref{fig:example} is referred a $label$.  The first label of each concept is an overall total; the total number of people in the specified geographic region that answered questions relating to the requested concept.   Subsequent labels are subsets of this overall total.  We've conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: $B27001\_001$, $B27001\_002$ etc.\\
 \\
-The way this data is organized is not tidy $<$include hadley tidy data reference$>$.  Instead it appears that the columns contain additional categorical information: gender, age and insurance.  In table \ref{fig:tidy} we have tidied up the data so that each row is an observation and each column is a variable.  Originally table B27001 contains a number of $total$ columns: overall total, total number of males, total number of females, and within each gender a total number of people within an age group.  In reshaping this data, we felt that these total columns were redundant once the data is in a tidy form.  
+The way this data is organized is not tidy $<$include hadley tidy data reference$>$.  Instead it appears that the columns contain additional categorical information: gender, age and insurance.  In table \ref{fig:tidy} we have tidied up the data so that each row is an observation and each column is a variable.  Originally table B27001 contains a number of $total$ columns: overall total, total number of males, total number of females, and within each gender a total number of people within an age group.  In reshaping this data, we felt that these total columns were redundant once the data is in a tidy form.  \\
+\\
+
 <<melted, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis">>=
 library(reshape2)
 dat.tidy = data.frame(dat2@estimate)
