@@ -299,6 +299,7 @@ Table \ref{tab:df} is information on health insurance for women 75 and older in 
 ["45","102","Calaveras County, California","06","009"],
 ["98","26","Colusa County, California","06","011"],
 \end{verbatim}
+This indicates that there are 668 women over 75 in Alameda county that have health insurance and 144 women over 75 in Alameda county without health insurance.
 
 \section{Limitations}
 The dataset used by \citet{stangl:2013} is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
@@ -434,6 +435,22 @@ final$race = unlist(apply(final[,19:24], 1, function(x){
 qplot(long, lat, data = final, group=group, order=order, geom="polygon", fill=race) + theme_bw() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank())
 @
 
+
+<<test, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
+library(maptools)
+library(ggplot2)
+library(plyr)
+library(ggmap)
+library(acs)
+
+ny.shape = readShapeSpatial("Z:/My Documents/shapes/tl_2013_36_tract.shp")
+ny.shape@data$id = rownames(ny.shape@data)
+ny.points = fortify(ny.shape)
+ny2.df = join(ny.points, ny.shape@data, by="id")
+#by county
+#subset(fips.county, State=='NY') #61, 5, 47, 81, 85
+qmap("brooklyn new york city", zoom=11) + geom_path(aes(x = long, y = lat, group=group, order=order), data = subset(ny2.df, COUNTYFP %in% c("061", "005", "047", "081", "085")))
+@
 \section{Conclusion}
 \printbibliography
 
