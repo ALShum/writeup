@@ -141,6 +141,8 @@ The same geographic information is also available in XML.  XML stands for Extens
 </fips>
 \end{verbatim}
 In the following examples, we will examine various geographies available from the online API and see which combinations of geographic regions are required.  We will use the United States as a whole and various geographic areas within the state of California for our examples.\\
+In all of the examples we make use of R \citep{R13} and ggplot2 \citep{ggplot2} for the graphics.
+
 <<state, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.width=5, cache=TRUE, fig.cap='California Selected', fig.align='center'>>=
 library(ggplot2)
 states.map = map_data("state")
