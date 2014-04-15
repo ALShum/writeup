@@ -12,6 +12,9 @@
 \begin{document}
 \maketitle
 
+\section{Abstract}
+Placeholder.
+
 \section{Introduction}
 The United States Census Bureau has been conducting a decennial census since 1790.  Originally this census was a simply to count the population across the country.  More recently the decennial census includes a short-form asking for name, sex, age, and a few other demographic variables.  About one in six households also received a long-form that contained additional socioeconomic questions.  After the 2000 decennial census many of the long-form questions were collected as part of a new survey: the American Community Survey (ACS).  \\
 \\
@@ -64,13 +67,13 @@ http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=state:
 \end{verbatim}
 The above HTTP GET requests specify all states, a specific state (California, see figure \ref{fig:state}), or multiple states (Alabama and California) respectively.  Some geographic regions are nested within larger regions and may require a specified containing region.  In our GET request the $\&for=[GEOGRAPHY]$ tag is used to indicate a geographic region of interest and the the $\&in=[GEOGRAPHY]$ tag is used to specify an appropriate containing region for our region of interest.  For example, counties are contained within states and the following is a GET request for a county or counties within a specific state:
 \begin{verbatim}
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=county:*&in=state:06
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=county:037&in=state:06
+http://api.census.gov/data/ [...] &for=county:*&in=state:06
+http://api.census.gov/data/ [...] &for=county:037&in=state:06
 \end{verbatim}
-The above HTTP GET requests  all counties in California and Los Angeles County in California respectively (see figure \ref{fig:county}).  There are even smaller geographic regions and for some of these geographic entities multiple containing regions must be specified for a valid GET request.  For example, census tracts are contained within both counties and states.  Here is how specify a census tract or multiple census tracts within a county and state:
+The above HTTP GET requests all counties in California and Los Angeles County in California respectively (see figure \ref{fig:county}, not that we truncated above URL for display purposes).  There are even smaller geographic regions and for some of these geographic entities multiple containing regions must be specified for a valid GET request.  For example, census tracts are contained within both counties and states.  Here is how specify a census tract or multiple census tracts within a county and state:
 \begin{verbatim}
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=tract:*&in=state:06+county:037
-http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=tract:101110&in=state:06+county:037
+http://api.census.gov/data/ [...] &for=tract:*&in=state:06+county:037
+http://api.census.gov/data/ [...] &for=tract:101110&in=state:06+county:037
 \end{verbatim}
 The above HTTP GET requests all census tracts within Los Angeles County and census tract 1011.10 within Los Angeles County respectively.\\
 \\
@@ -122,8 +125,8 @@ Summary Level & Description \\
 \label{tab:geolist}
 \end{table}
 
-From table \ref{tab:geolist}, there is a specific hierarchy of geographic regions and specific valid combinations of geographic regions.  Different ACS datasets  have different geographic regions available and different requirements for geographic regions.  For example, the 2010 decennial census requires that we specify a state for zip code tabulation areas.  By contrast, the 2012 ACS 5-year dataset has zip code tabulation areas that do not require a containing state for a valid GET request.  The 2010 ACS 5-year dataset simply does not have zip code tabulation areas available at all.  In order to understand which geographic regions are available for datasets and which combination of geographic regions are valid we will discuss the Census Bureaus documentation scheme for each of their datasets in the section \label{sec:geo}.
-
+From table \ref{tab:geolist}, there is a specific hierarchy of geographic regions and specific valid combinations of geographic regions.  Different ACS datasets  have different geographic regions available and different requirements for geographic regions.  For example, the 2010 decennial census requires that we specify a state for zip code tabulation areas.  By contrast, the 2012 ACS 5-year dataset has zip code tabulation areas that do not require a containing state for a valid GET request.  The 2010 ACS 5-year dataset simply does not have zip code tabulation areas available at all.  In order to understand which geographic regions are available for datasets and which combination of geographic regions are valid we will discuss the Census Bureaus documentation scheme for each of their datasets in the section \ref{sec:geo}.\\
+\\
 Finding available demographic variables and forming a valid GET request for ($[$VARIABLES$]$) require a more detailed knowledge of how the census datasets are organized and also requires knowledge of how the Census Bureau lists available variables.  We discuss finding demographic variables and their format and structure in section \ref{sec:var}.
 
 \section{Metafiles}
@@ -142,7 +145,7 @@ Each dataset available on the Census Bureau online API include an associated geo
   "optionalWithWCFor": "county"
 }
 \end{verbatim}
-This JSON file specifies that census tract level geography always requires a containing state.  The $optionalWithWCFor$ tag indicates that an additional containing county for census tracts is only sometimes required.  An GET request for all census tracts within a state requires a specified state but only optionally requires a county.  Requesting all census tracts within a particular county requires both a specified state and a specified county.  Requesting a particular census tract instead of all census tracts requires both a specified state and county.  These requirements are due to how census tracts are labelled by the Census Bureau.  Census tracts are often labelled using a string of numbers and it is not uncommon for census tracts located in different states and counties to share the same label.\\
+This JSON file specifies that census tract level geography always requires a containing state.  The {\tt optionalWithWCFor} tag indicates that an additional containing county for census tracts is only sometimes required.  An GET request for all census tracts within a state requires a specified state but only optionally requires a county.  Requesting all census tracts within a particular county requires both a specified state and a specified county.  Requesting a particular census tract instead of all census tracts requires both a specified state and county.  These requirements are due to how census tracts are labelled by the Census Bureau.  Census tracts are often labelled using a string of numbers and it is not uncommon for census tracts located in different states and counties to share the same label.\\
 \\
 The same geographic information is also available in XML.  The above geographic information is presented in the following XML format:
 \begin{verbatim}
@@ -214,7 +217,7 @@ For a more detailed look at which geographies need to be specified, refer to the
 
 \subsection{Finding Data Sets and Tables Structure}
 \label{sec:var}
-The ($[$VARIABLES$]$) parameters vary between datasets and to track which datasets are available the Census Bureau API includes a master index of available dataset formatted in both JSON and XML.  The JSON file is available online at \url{http://api.census.gov/data.json} and the XML file is available online at \url{http://api.census.gov/data.xml}.  This master index includes necessary meta-information about each dataset including description, links to geography and variable information and contact information for maintainer of datasets.  The JSON format is formatted as follows:
+The ($[$VARIABLES$]$) parameters depends on dataset.  To track which datasets are available there is a master index of available dataset formatted in both JSON and XML provided by the Census Bureau.  The JSON file is available online at \url{http://api.census.gov/data.json} and the XML file is available online at \url{http://api.census.gov/data.xml}.  This master index includes necessary meta-information about each dataset including description, links to geography and variable information and contact information for maintainer of datasets.  The JSON format is formatted as follows:
 \begin{verbatim}
 {
   "c_vintage": 2012,
@@ -271,11 +274,11 @@ The American Community Survey (ACS) is a nationwide survey...
 <pod:reference link="http://www.census.gov/developers/"/>
 </dataset>
 \end{verbatim}
-After selecting a dataset listed in the master index, the user will lookup what variables are available for that dataset.  The JSON and XML master index of datasets contain the location of $variables.json$ and $variables.xml$ respectively which list available variables available for that dataset.  Available variables are organized into tables referred to as "concepts"; a "concept" is a combination of factors.  For example, "Health Insurance Coverage Status by Sex by Age" is a concept from the 2012 ACS.  Within each "concept" are "labels"; a "label" is a combination of levels for the factors within a concept.\\
+After selecting a dataset listed in the master index, the user will lookup what variables are available for that dataset.  The JSON and XML master index of datasets contain the location of $variables.json$ and $variables.xml$ respectively which list available variables available for that dataset.  Available variables are organized into tables referred to as $concepts$; a $concept$ is a combination of factors.  For example, ``Health Insurance Coverage Status by Sex by Age" is a concept from the 2012 ACS.  Within each $concept$ are $labels$; a $label$ is a combination of levels for the factors within a concept.\\
 \\
-Within each concept there are multiple labels that provide information on different levels of each of the factors.  For example, the concept "Health Insurance Coverage Status by Sex by Age" contains a label for males over 70 with health insurance.  This concept also contains labels for each combination of gender (male, female), age group (under 6, 6 to 17, 18 to 24, 25 to 34, 35 to 44, 45 to 54, 55 to 64, 65 to 74 and 75 and over) and health insurance coverage (with and without health insurance).  Some of the labels may also contain summary information in the form of totals.  For this concept there are labels for total number of males, total number of females and totals for males/females in each age group.\\
+Within each concept there are multiple labels that provide information on different levels of each of the factors.  For example, the concept ``Health Insurance Coverage Status by Sex by Age" contains a label for males over 70 with health insurance.  This concept also contains labels for each combination of gender (male, female), age group (under 6, 6 to 17, 18 to 24, 25 to 34, 35 to 44, 45 to 54, 55 to 64, 65 to 74 and 75 and over) and health insurance coverage (with and without health insurance).  Some of the labels may also contain summary information in the form of totals.  For this concept there are labels for total number of males, total number of females and totals for males/females in each age group.\\
 \\
-To lookup what variables are available, the $variables.json$ and $variables.xml$ files contain a list of all concepts and labels along with a description.  The JSON formatted $variables.json$ is formatted as follows:
+To lookup what variables are available, the {\tt variables.json} and {\tt variables.xml} files contain a list of all concepts and labels along with a description.  The JSON formatted $variables.json$ is formatted as follows:
 \begin{verbatim}
 "B27001_056E": {
   "label": "Female:!!75 years and over:!!With health insurance coverage",
@@ -288,12 +291,12 @@ This describes label 056E of concept B27001.  This is a table of 75 and older fe
   label="Female:!!75 years and over:!!With health insurance coverage" 
   concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
 \end{verbatim}
-In both the XML and JSON formats the different levels of factors in the labels are separated by !!.  To form a valid GET request we take the header from the JSON file (or the $id$ from the XML file) and that will be the parameter we use for ($[$VARIABLES$]$).  The concept-label ID $B27001\_056E$ will request the "75 and older female with health insurance" label from the "health insurance coverage status by sex by age" concept.  A valid HTTP GET request for this is \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=B27001_056E&for=[GEOGRAPHY]}.
+In both the XML and JSON formats the different levels of factors in the labels are separated by !!.  To form a valid GET request we take the header from the JSON file (or the $id$ from the XML file) and that will be the parameter we use for ($[$VARIABLES$]$).  The concept-label ID $B27001\_056E$ will request the ``75 and older female with health insurance" label from the ``health insurance coverage status by sex by age" concept.  A valid HTTP GET request for this is \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=B27001_056E&for=[GEOGRAPHY]}.
 
 <<dataexample, echo=FALSE, cache=TRUE, results='asis'>>=
 library(rjson)
 library(plyr)
-url = "http://api.census.gov/data/2012/acs5?key=b59354d11f96afaa8cbd17c5f9e5cdf7d057fc1c&get=B27001_036M,B27001_037M,NAME&for=county:*&in=state:06"
+url = "http://api.census.gov/data/2012/acs5?key=b59354d11f96afaa8cbd17c5f9e5cdf7d057fc1c&get=B27001_056E,B27001_056E,NAME&for=county:*&in=state:06"
 js = fromJSON(file=url)
 df = ldply(js)
 names(df) = df[1,]
@@ -304,7 +307,7 @@ print(xtable(head(df), label="tab:df", caption="Health insurance status of women
 
 Table \ref{tab:df} is information on health insurance for women 75 and older in California from the 2012 ACS 5-year data listed by county.  The HTTP GET request for this is \url{http://api.census.gov/data/2012/acs5?key=[KEY]&get=B27001_056E,B27001_057E,NAME&for=county:*&in=state:06}.  Labels 056E and 057E are labels for women 75 and older with health insurance and women 75 and older without health insurance respectively.  The result of our HTTP GET request is a JSON formatted file in the following format:
 \begin{verbatim}
-[["B27001_036M","B27001_037M","NAME","state","county"],
+[["B27001_056E","B27001_057E","NAME","state","county"],
 ["668","144","Alameda County, California","06","001"],
 ["15","69","Alpine County, California","06","003"],
 ["88","131","Amador County, California","06","005"],
@@ -312,7 +315,19 @@ Table \ref{tab:df} is information on health insurance for women 75 and older in 
 ["45","102","Calaveras County, California","06","009"],
 ["98","26","Colusa County, California","06","011"],
 \end{verbatim}
-This indicates that there are 668 women over 75 in Alameda county that have health insurance and 144 women over 75 in Alameda county without health insurance.
+This indicates that there are 668 women over 75 in Alameda county that have health insurance and 144 women over 75 in Alameda county without health insurance.\\
+\\
+The list of variables, $variables.json$ and $variables.xml$ not only contain a list of variables as described above but also include margin of error.  Estimates from the ACS are based on random sampling thus each of the estimates has a standard error.  The Census Bureau uses a 90$\%$ confidence level for their margin of error.  To find the associated margin of error for our variable we replace the last letter of label with an ``M" instead of an ``E".  For example, $B27001\_056E$ and $B27001\_057E$ are the associated standard errors for the previous example.  Standard errors have the exact same formatting as any other variable from the ACS:
+\begin{verbatim}
+[["B27001_056M","B27001_057E","NAME","state","county"],
+["356","302","Alameda County, California","06","001"],
+["13","0","Alpine County, California","06","003"],
+["51","0","Amador County, California","06","005"],
+["134","47","Butte County, California","06","007"],
+["99","0","Calaveras County, California","06","009"],
+["34","0","Colusa County, California","06","011"],
+\end{verbatim}
+Using the above table, $668 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
 
 \section{Limitations of the API}
 The dataset used by \citet{stangl:2013} is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
@@ -327,7 +342,7 @@ Using the Census Bureau's online API for these exercises presents us three main 
 <<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
-print(xtable(head(acsdat), label="tab:table", caption="Random subset of 2010 ACS public use microdata sample"))
+print(xtable(head(acsdat), label="tab:table", caption="Random subset of 2010 ACS public use microdata sample"), include.rownames=FALSE)
 #structure of data isn't a dataframe but multiple tables
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
@@ -351,9 +366,7 @@ By contrast the online API does not provide individual specific data.  When we p
 \\
 In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table and as previously mentioned we refer to this as a $concept$ and each column in table \ref{fig:example} is referred a $label$.  The first label of each concept is an overall total; the total number of people in the specified geographic region that answered questions relating to the requested concept.   Subsequent labels are subsets of this overall total.  We've conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: $B27001\_001$, $B27001\_002$ etc.\\
 \\
-The way this data is organized is not tidy $<$include hadley tidy data reference$>$.  Instead it appears that the columns contain additional categorical information: gender, age and insurance.  In table \ref{fig:tidy} we have tidied up the data so that each row is an observation and each column is a variable.  Originally table B27001 contains a number of $total$ columns: overall total, total number of males, total number of females, and within each gender a total number of people within an age group.  In reshaping this data, we felt that these total columns were redundant once the data is in a tidy form.  \\
-\\
-The Census Bureau has historically provided information in the form of a count.  However, 
+The way this data is organized is not tidy $<$include hadley tidy data reference$>$.  Instead it appears that the columns contain additional categorical information: gender, age and insurance.  In table \ref{fig:tidy} we have tidied up the data so that each row is an observation and each column is a variable.  Originally table B27001 contains a number of $total$ columns: overall total, total number of males, total number of females, and within each gender a total number of people within an age group.  In reshaping this data, we felt that these total columns were redundant once the data is in a tidy form. \\
 
 <<melted, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis">>=
 library(reshape2)
@@ -375,8 +388,39 @@ final = data.frame(state = dat.tidy.melt$state, gender = v$gender, age = v$age, 
 
 tab2 = xtable(head(final), label="fig:tidy", caption="Reshaped Health Insurance Coverage data.")
 digits(tab2) = rep(0,6)
-print(tab2)
+print(tab2, include.rownames=FALSE)
 @
+
+The Census Bureau has historically provided information in the form of a count.  However, the nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  During this period California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population.
+<<freq, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
+library(reshape2)
+library(acs)
+library(xtable)
+dat = data.frame(acs.fetch(endyear = 2012, span = 5, geography = states, table.number = "B14004", col.names="pretty")@estimate)
+names(dat) = gsub("Sex.by.College.or.Graduate.School.Enrollment.by.Type.of.School.by.Age.for.the.Population.15..Yrs..", "", names(dat))
+dat$state = rownames(dat)
+rownames(dat) = NULL
+univ.orig = dat
+dat = dat[,-c(1,2,3,8,13,18,19,24,29)]
+dat.melt = melt(dat, id = 'state')
+dat.split = ldply(strsplit(as.character(dat.melt$variable), "\\.\\."))
+#univ.orig = dataframe unmelted#
+
+univ = data.frame(state = dat$state, 
+                  gender = dat.split$V1,
+                  school = dat.split$V2,
+                  age = dat.split$V3,
+                  freq = dat.melt$value)
+levels(univ$school) = c("private", "public", "not enrolled")
+univ$age = gsub(".years", "", univ$age)
+univ$age = as.factor(univ$age)
+levels(univ$gender) = c("f", "m")
+univ2 = subset(univ, age == "18.to.24")
+tab1 = xtable(head(univ2), label="tab:freq", caption="University enrollment by gender, age and university type")
+digits(tab1) = rep(0,6)
+print(tab1, include.rownames=FALSE)
+@
+
 
 
 <<var, echo=FALSE>>=
