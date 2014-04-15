@@ -1,8 +1,10 @@
 \documentclass{article}
 \usepackage{url}
+\usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage[backend=bibtex, natbib=true]{biblatex}
 \addbibresource{references.bib}
+
 
 \usepackage[margin=1in]{geometry}
 \setlength{\parindent}{0in}
@@ -195,7 +197,7 @@ Due to the sheer number of different geographic entities there are geographic co
 \\
 From figure \ref{fig:iowa} state house districts and state senate districts share some common borders but some senate districts are comprised of multiple house districts.  In this case house districts are nested within senate districts.  Iowa's unified school districts are completely different from both house and senate districts and also do not line up with county borders.  This is an example of incompatible geographies; unified school districts are not nested in house, senate or counties and are incompatible with these geographic entities.\\
 
-<<iowa, echo=FALSE, echo=FALSE, warning=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.cap='Various geographic entities in Iowa',  fig.align='center', fig.show='hold'>>=
+<<iowa, warning=FALSE, echo=FALSE, message=FALSE, out.width="3in", cache=TRUE, fig.cap='Various geographic entities in Iowa',  fig.align='center', fig.show='hold'>>=
 iowa.ld.lower = readShapeSpatial("tl_2013_19_sldl.shp")
 iowa.ld.upper = readShapeSpatial("tl_2013_19_sldu.shp")
 iowa.sd = readShapeSpatial("tl_2013_19_unsd.shp")
@@ -391,7 +393,7 @@ digits(tab2) = rep(0,6)
 print(tab2, include.rownames=FALSE)
 @
 
-The Census Bureau has historically provided information in the form of a count.  However, the nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  During this period California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population.
+The Census Bureau has historically provided information in the form of a count.  However, the nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  This dataset is reshaped into a tidy form.  In this dataset we have gender, age and enrollment status (public university, private university or not enrolled).  California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population.\\
 <<freq, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
 library(reshape2)
 library(acs)
@@ -420,7 +422,25 @@ tab1 = xtable(head(univ2), label="tab:freq", caption="University enrollment by g
 digits(tab1) = rep(0,6)
 print(tab1, include.rownames=FALSE)
 @
-
+The size of the population depends on the topic of interest.  One potential topic of interest is gender differences in public university enrollment in college aged individuals.  In this case our population is the total number of college aged students enrolled in a public university.  In table \ref{tab:freq2}, we modify the above table and calculate the percentage of males/females for each combination of school and age group for each state.\\
+<<freq2, dependson='freq', echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
+univ3 = subset(univ2, school=="public")
+tot = ddply(univ3, .(state, school, age), transform, tot = sum(freq))
+univ4 = data.frame(state = tot$state, gender = tot$gender, school = tot$school, age = tot$age, pct = tot$freq/tot$tot)
+toPrint = subset(univ4, gender=="m")
+tab1 = xtable(head(toPrint), label="tab:freq2", caption="University enrollment by gender, age and university type")
+print(tab1, include.rownames=FALSE)
+@
+These percentages tell us a lot more about the data; when it comes to public university enrollment for college-aged invidividuals both California and Colorado have fewer males enrolled.  Finding these proportions was not difficult but it requires a bit more work to correctly add up the frequencies in our population.\\
+\\
+A more difficult problem is in finding standard errors for confidence intervals.  Recall that the Census Bureau provides a margin of error for each variable at the 90$\%$ confidence level.  Finding standard errors (SE) for the estimates from the margin of error (MOE) is straight forward: $SE = \frac{MOE}{1.645}$ where 1.645 is the critical value from the standard normal distribution that corresponds to a central area of $0.90$.  Finding the standard error for proportions requires further calculations:
+\begin{align*}
+SE(\frac{X}{Y}) = \frac{1}{Y}\sqrt{SE(X)^2 - (\frac{X}{Y})^2 SE(B)^2}
+\end{align*}
+In calculating proportions we must often add different estimates together for different $labels$.  Combining the standard error for a sum of estimates: $SE(X + Y) = \sqrt{SE(X)^2 + SE(Y)^2}$.\\
+%https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
+\\
+Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} we are quite limited in the combination of variables that are available to us.
 
 
 <<var, echo=FALSE>>=
@@ -516,6 +536,9 @@ ny2.df = join(ny.points, ny.shape@data, by="id")
 qmap("brooklyn new york city", zoom=11) + geom_path(aes(x = long, y = lat, group=group, order=order), data = subset(ny2.df, COUNTYFP %in% c("061", "005", "047", "081", "085")))
 @
 \section{Conclusion}
+
+\section{Appendix}
+
 \printbibliography
 
 \end{document}
