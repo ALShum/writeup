@@ -41,7 +41,7 @@ $[$YEAR$]$ and $[$DATASET$]$ specify the dataset and year of the data requested.
 <<datasettable, echo=FALSE, warning=FALSE, message=FALSE, results='asis'>>=
 library(xtable)
 sets = data.frame(Description = c("Decennial Census", "ACS 5-year", "ACS 3-year", "ACS 1-year"),
-                  YEAR = c("1990, 2000, 2010", "2010, 2011, 2012", "2011, 2012", "2011, 2012"),
+                  YEAR = c("1990, 2000, 2010", "2010, 2011, 2012", "2012", "2011, 2012"),
                   DATASET = c("sf1", "acs5", "acs3", "acs1"))
 sets = sets[,c(3,2,1)]
 tabl = xtable(sets, label="tab:datasettable", caption="Datasets and Years")
@@ -332,12 +332,12 @@ The list of variables, $variables.json$ and $variables.xml$ not only contain a l
 Using the above table, $668 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
 
 \section{Limitations of the API}
-The dataset used by \citet{stangl:2013} is a random subset of the 2010 ACS public use microdata sample.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
+\citet{stangl:2013} talks about using the ACS as a dataset for classroom exercises because it demonstrates how statistics are used to make important policy decisions.  This article contains a number of classroom exercises that ask the reader to calculate some basic proportions about various demographic data such as health insurance coverage, marriage status and income.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
 \\
 Using the Census Bureau's online API for these exercises presents us three main problems.  
 \begin{enumerate}
 \item The structure of data in the public use microdata sample is different from data from the online API.
-\item Proportions and standard errors require a bit of calculations.
+\item Proportions and standard errors are not included.
 \item Certain combination of variables are simply not available from the online API.
 \end{enumerate}
 
@@ -435,20 +435,97 @@ These percentages tell us a lot more about the data; when it comes to public uni
 \\
 A more difficult problem is in finding standard errors for confidence intervals.  Recall that the Census Bureau provides a margin of error for each variable at the 90$\%$ confidence level.  Finding standard errors (SE) for the estimates from the margin of error (MOE) is straight forward: $SE = \frac{MOE}{1.645}$ where 1.645 is the critical value from the standard normal distribution that corresponds to a central area of $0.90$.  Finding the standard error for proportions requires further calculations:
 \begin{align*}
-SE(\frac{X}{Y}) = \frac{1}{Y}\sqrt{SE(X)^2 - (\frac{X}{Y})^2 SE(B)^2}
+SE(\frac{A}{B}) = \frac{1}{B}\sqrt{SE(A)^2 - (\frac{A}{B})^2 SE(B)^2}
 \end{align*}
-In calculating proportions we must often add different estimates together for different $labels$.  Combining the standard error for a sum of estimates: $SE(X + Y) = \sqrt{SE(X)^2 + SE(Y)^2}$.\\
+In calculating proportions we must often add different estimates together for different $labels$.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.\\
 %https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
 \\
-Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} we are quite limited in the combination of variables that are available to us.
+Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} there are limited combination of variables that are available.  One of the exercises in \citet{stangl:2013} is to compare health insurance status by race.  This exercise using the public use microsample is straight forward and requires a single line of code using the plyr package in R.  We can summarise percentage of people with health insurance by race as follows:
+<<stangl1, warning=FALSE, message=FALSE, cache=TRUE>>=
+library(plyr)
+acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
+head(acsdat)
 
-
-<<var, echo=FALSE>>=
+acsdat_by_race = ddply(acsdat, .(Race), summarise, 
+                       insurance_pct = sum(HealthInsurance)/length(Race))
+print(acsdat_by_race)
+@
+This same calculation can be done from data provided by the online API.  Recall that the data at the individual data is not available with the online API but it is still to calculate overall insurance rates using state or country level data.  An additional step is required because the online API separates race into eight separate tables.  Due to the structure of the data from the ACS package, without putting the data in tidy form, finding the percentage with health insurance requires summing columns and element-wise division between columns.  
+<<acs1_hidden, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 #example1: (chance #3, #5)
 #age + sex + health insurance available.
 #age + race + health insurance available.
 #age + race + sex + health insurance not available
+library(acs)
+#specify geography
+us = geo.make(us = "*")
 
+#get requests
+health_white = acs.fetch(endyear = 2012, span = 5, 
+                         geography = us, 
+                         table.number = "C27001A", 
+                         col.names="pretty")@estimate
+health_black = acs.fetch(endyear = 2012, span = 5, 
+                         geography = us, 
+                         table.number = "C27001B", 
+                         col.names="pretty")@estimate
+health_asian = acs.fetch(endyear = 2012, span = 5, 
+                        geography = us, 
+                        table.number = "C27001D", 
+                        col.names="pretty")@estimate
+health_other = acs.fetch(endyear = 2012, span = 5, 
+                        geography = us, 
+                        table.number = "C27001C", 
+                        col.names="pretty")@estimate +
+               acs.fetch(endyear = 2012, span = 5, 
+                        geography = us, 
+                        table.number = "C27001E", 
+                        col.names="pretty")@estimate +
+               acs.fetch(endyear = 2012, span = 5, 
+                        geography = us, 
+                        table.number = "C27001F", 
+                        col.names="pretty")@estimate +
+               acs.fetch(endyear = 2012, span = 5, 
+                        geography = us, 
+                        table.number = "C27001G", 
+                        col.names="pretty")@estimate 
+@
+<<acs1, warning=FALSE, message=FALSE, cache=TRUE>>=
+#column names from ACS
+print(colnames(health_white))
+
+#sums columns together
+calc_pct = function(df) {
+  sum(df[c(3,6,9)])/df[,1]
+}
+
+#sum columns
+a_pct = calc_pct(health_asian)
+b_pct = calc_pct(health_black)
+o_pct = calc_pct(health_other)
+w_pct = calc_pct(health_white)
+@
+The column headers of the health insurance by race dataset from the online API reveal one big issue: the available variables are strictly set and cannot be easily changed.  The original exercise was to calculate health insurance coverage percentage for each race and age group is not a variable of interest.  In the subset of the public use microsample in \citet{stangl:2013} there were additional variables but because this dataset is in a tidy format it is possible to easily subset the data by row.  The dataset from the online API has different levels of factors in each column, age and health insurance status, and requires an extra step to sum health insurance numbers over the different levels of the age variable.  For datasets with more variables than just age and health insurance coverage, the non-tidy structure of this data means that summaries of some of the variables will requiring summing over all levels of other variables.  For each of the different datasets for races we have summed up health insurance coverage numbers over the different age groups and found the overall health coverage percentage numbers:
+<<acs11, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
+#print
+sprintf("asian insurance_pct: %f", a_pct)
+sprintf("black insurance_pct: %f", b_pct)
+sprintf("other insurance_pct: %f", o_pct)
+sprintf("white insurance_pct: %f", w_pct)
+@
+Since the available variables are strictly set, it is not possible to subset further.  From the dataset in \citet{stangl:2013}, it is possible to subset further: health insurance percentage by race and gender.  Again, this calculation requires one line of code using the plyr package in R:
+<<stangl2, warning=FALSE, message=FALSE, cache=TRUE>>=
+library(plyr)
+acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
+head(acsdat)
+
+acsdat_gender_race = ddply(acsdat, .(Race, Sex), summarise, 
+                           insurance_pct = sum(HealthInsurance)/length(Race))
+print(acsdat_gender_race)
+@
+The dataset from the online API for health insurance by age and race does not include gender and because the available variables are strictly set for each table it is not possible to calculate health insurance coverage percentage by race and gender.  Our only option is to look at other tables and find one that includes all combinations of variables of interest.  There is another table available from the online API for health insurance: table number $B27001$.  This table is health insurance coverage status by age and gender.  It is possible to use both of these tables on health insurance to calculate estimates of health insurance coverage by gender and race but constructing exact figures is not possible.\\
+\\
+<<var, echo=FALSE>>=
 #example2: (chance #4)
 #age + sex + marriage available
 #race + sex + marriage available
@@ -470,10 +547,16 @@ Due to how the data is provided by the Census Bureau compared with the subset of
 @
 
 \section{Other Issues}
-%tables formatted differently
-%2010acs5 differently formatted
-%difficult to compare data across years
-%healthcare questions added in 2008
+%\subsection{Comparing across years}
+%http://www.census.gov/acs/www/guidance_for_data_users/comparing_data/
+Although the ACS is a yearly survey, in its current form it is difficult to compare variables across years.  The online API has ACS data available for 2010 to 2012 but even for these years it is difficult track changes during these years.  Recall that the 2012 ACS 5-year dataset is data aggregated from 2008 - 2012.  This means that the 2010, 2011 and 2012 ACS 5-year datasets will include overlapping time periods; some of the data used aggregated to form these 5-year estimates will overlap.  \\
+\\
+It is possible to circumvent this overlapping data problem by combining the ACS 5-year estimate with the ACS 1-year estimate.  The 2011 ACS 5-year and the 2012 ACS 1-year do not contain overlapping data.  However, datasets from different years contain different demographic variables.  For example, questions regarding healthcare were first added in 2008 and datasets prior to 2008 will not contain healthcare variables.  The ACS 1-year estimates have smaller sample sizes and as a result not all geographic regions are available.  The ACS 1-year estimates only have data available for geographic regions with populations of 65,000 or greater.\\
+\\
+As a guideline the Census Bureau recommends comparing similar length datasets that do not overlap.  For example, comparing 1-year estimates from different years or 3-year estimates for two periods that don't overlap.  Unfortunately, the only option for comparing data across years out of the available datasets from the online API is to compare 2011 and 2012 1-year estimates.
+
+%\subsection{Nonresponse}
+
 
 \section{Examples from ACS}
 <<NY, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
