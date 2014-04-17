@@ -1,0 +1,61 @@
+% $ biblatex auxiliary file $
+% $ biblatex version 2.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\entry{stangl:2013}{article}{}
+  \name{author}{3}{}{%
+    {{}%
+     {Stangl}{S.}%
+     {Dalene}{D.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Rundel}{R.}%
+     {Mine}{M.}%
+     {\c{C}etinkaya}{c.}%
+     {}{}}%
+    {{}%
+     {Morgan}{M.}%
+     {Kari~Lock}{K.~L.}%
+     {}{}%
+     {}{}}%
+  }
+  \strng{namehash}{SDRMcMKL1}
+  \strng{fullhash}{SDRMcMKL1}
+  \field{sortinit}{S}
+  \verb{doi}
+  \verb 10.1080/09332480.2013.772392
+  \endverb
+  \verb{eprint}
+  \verb http://www.tandfonline.com/doi/pdf/10.1080/09332480.2013.772392
+  \endverb
+  \field{number}{1}
+  \field{pages}{42\bibrangedash 46}
+  \field{title}{Taking a Chance in the Classroom: The American Community
+  Survey}
+  \verb{url}
+  \verb http://www.tandfonline.com/doi/abs/10.1080/09332480.2013.772392
+  \endverb
+  \field{volume}{26}
+  \field{journaltitle}{CHANCE}
+  \field{year}{2013}
+\endentry
+
+\lossort
+\endlossort
+
+\endinput
