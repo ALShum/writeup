@@ -335,7 +335,7 @@ Using the Census Bureau's online API for these exercises presents us with three 
 <<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
-print(xtable(head(acsdat), label="tab:table", caption="Random subset of 2010 ACS public use microdata sample"), include.rownames=FALSE)
+print(xtable(head(acsdat),  label="tab:table", caption="Random subset of 2010 ACS public use microdata sample"), NA.string ="NA", include.rownames=FALSE)
 #structure of data isn't a dataframe but multiple tables
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
@@ -351,13 +351,13 @@ dat2 = acs.fetch(endyear = 2012, span = 5, geography = states, table.number="B27
 dat.table = data.frame(dat@estimate[,1:5])
 names(dat.table) = c("Total", "M Total", "M <6", "M <6 w/insurance", "M <6 w/o insurance")
 
-tab1 = xtable(head(dat.table), label="fig:example", caption="Health Insurance Coverage information from Census API.  Each of the M columns indicate male, subsequent numbers indicate age; there are corresponding F columns for females that is not shown to conserve space.")
+tab1 = xtable(head(dat.table), label="fig:example", caption="Health Insurance Coverage information from Census API.  Each of the M columns indicate male, subsequent numbers indicate age; there are corresponding F columns for females that are not shown to conserve space.")
 digits(tab1) = rep(0,6)
 print(tab1)
 @
 By contrast the online API does not provide individual specific data.  When we perform a HTTP GET request we must specify what geographic level of detail we want.  The geographic level of detail does not go below the county subdivision or census tract level.  Instead of individual specific data we have data that has been aggregated for an entire geographic region.  This is likely due to privacy reasons; if we have individual specific data for a dozen demographic variables along with geographic information it might be possible to reveal this individual's identity.  \\
 \\
-In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table and as previously mentioned we refer to this as a $concept$ and each column in table \ref{fig:example} is referred a $label$.  The first label of each concept is an overall total; the total number of people in the specified geographic region that answered questions relating to the requested concept.   Subsequent labels are subsets of this overall total.  We've conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: $B27001\_001$, $B27001\_002$ etc.\\
+In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table and as previously mentioned we refer to this as a $concept$ and each column in table \ref{fig:example} is referred a $label$.  The first label of each concept is an overall total; the total number of people in the specified geographic region that answered questions relating to the requested concept.   Subsequent labels are subsets of this overall total.  We've conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: {\tt B27001\_001},  { \tt B27001\_002} etc.\\
 \\
 The way this data is organized is not in a tidy format, see \cite{hadley:2014}.  Instead it appears that the columns contain additional categorical information: gender, age and insurance.  In table \ref{fig:tidy} we have tidied up the data so that each row is an observation and each column is a variable.  Originally table B27001 contains a number of \emph{total} columns: overall total, total number of males, total number of females, and within each gender a total number of people within an age group.  In reshaping this data, we felt that these total columns were redundant once the data is in a tidy form. \\
 
@@ -417,28 +417,28 @@ The size of the population depends on the topic of interest.  One potential topi
 <<freq2, dependson='freq', echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
 univ3 = subset(univ2, school=="public")
 tot = ddply(univ3, .(state, school, age), transform, tot = sum(freq))
-univ4 = data.frame(state = tot$state, gender = tot$gender, school = tot$school, age = tot$age, pct = tot$freq/tot$tot)
+univ4 = data.frame(state = tot$state, gender = tot$gender, school = tot$school, age = tot$age, pct = tot$freq/tot$tot*100)
 toPrint = subset(univ4, gender=="m")
 tab1 = xtable(head(toPrint), label="tab:freq2", caption="University enrollment by gender, age and university type")
 print(tab1, include.rownames=FALSE)
 @
 These percentages tell us a lot more about the data; when it comes to public university enrollment for college-aged invidividuals both California and Colorado have fewer males enrolled.  Finding these proportions was not difficult but it requires a bit more work to correctly add up the frequencies in our population.\\
 \\
-A more difficult problem lies in finding standard errors for confidence intervals.  Recall that the Census Bureau provides a margin of error for each variable at the 90$\%$ confidence level.  Finding standard errors (SE) for the estimates from the margin of error (MOE) is straight forward: $SE = \frac{MOE}{1.645}$ where 1.645 is the critical value from the standard normal distribution that corresponds to a central area of $0.90$.  Finding the standard error for proportions requires further calculations:
+A more difficult problem lies in finding standard errors for confidence intervals.  Recall that the Census Bureau provides a margin of error for each variable at the 90$\%$ confidence level.  Finding standard errors (SE) for the estimates from the margin of error (MOE) is straight forward: $SE = \text{MOE}/1.645$ where 1.645 is the critical value from the standard normal distribution that corresponds to a central area of $0.90$.  Finding the standard error for proportions requires further calculations:
 \begin{align*}
-SE(\frac{A}{B}) = \frac{1}{B}\sqrt{SE(A)^2 - (\frac{A}{B})^2 SE(B)^2}
+SE(A/B) = 1/B\sqrt{SE(A)^2 - \left(A/B\right)^2 SE(B)^2}
 \end{align*}
 In calculating proportions we must often add different estimates together for different labels.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.\\
 %https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
 \\
 Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} there are limited combinations of variables  available.  One of the exercises in \citet{stangl:2013} is to compare health insurance status by race.  This exercise using the public use microsample is straight forward and requires a single line of code using the plyr \cite{plyr} package in R.  We can summarise percentage of people with health insurance by race as follows:
-<<stangl1, warning=FALSE, message=FALSE, cache=TRUE>>=
+<<stangl1, warning=FALSE, message=FALSE, cache=TRUE, tidy=FALSE>>=
 library(plyr)
 acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
 head(acsdat)
 
 acsdat_by_race = ddply(acsdat, .(Race), summarise, 
-                       insurance_pct = sum(HealthInsurance)/length(Race))
+                       insurance_pct = 100*sum(HealthInsurance)/length(Race))
 print(acsdat_by_race)
 @
 This same calculation can be done from data provided by the online API.  Recall that the data at the individual data is not available with the online API but it is still to calculate overall insurance rates using state or country level data.  An additional step is required because the online API separates race into eight separate tables.  Due to the structure of the data from the ACS package, without putting the data in tidy form, finding the percentage with health insurance requires summing columns and element-wise division between columns.  
@@ -487,7 +487,7 @@ print(colnames(health_white))
 
 #sums columns together
 calc_pct = function(df) {
-  sum(df[c(3,6,9)])/df[,1]
+  sum(df[c(3,6,9)])/df[,1]*100
 }
 
 #sum columns
@@ -505,16 +505,16 @@ sprintf("other insurance_pct: %f", o_pct)
 sprintf("white insurance_pct: %f", w_pct)
 @
 Since the available variables are strictly set, it is not possible to subset further.  From the dataset in \citet{stangl:2013}, it is possible to subset further: health insurance percentage by race and gender.  Again, this calculation requires one line of code using the plyr package in R:
-<<stangl2, warning=FALSE, message=FALSE, cache=TRUE>>=
+<<stangl2, warning=FALSE, message=FALSE, cache=TRUE, tidy = FALSE>>=
 library(plyr)
 acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
 head(acsdat)
 
 acsdat_gender_race = ddply(acsdat, .(Race, Sex), summarise, 
-                           insurance_pct = sum(HealthInsurance)/length(Race))
+                           insurance_pct = 100*sum(HealthInsurance)/length(Race))
 print(acsdat_gender_race)
 @
-The dataset from the online API for health insurance by age and race does not include gender and because the available variables are strictly set for each table it is not possible to calculate health insurance coverage percentage by race and gender.  Our only option is to look at other tables and find one that includes all combinations of variables of interest.  There is another table available from the online API for health insurance: table number $B27001$.  This table is health insurance coverage status by age and gender.  It is possible to use both of these tables on health insurance to calculate estimates of health insurance coverage by gender and race but constructing exact figures is not possible.\\
+The dataset from the online API for health insurance by age and race does not include gender and because the available variables are strictly set for each table it is not possible to calculate health insurance coverage percentage by race and gender.  Our only option is to look at other tables and find one that includes all combinations of variables of interest.  There is another table available from the online API for health insurance: table number {\tt B27001}.  This table is health insurance coverage status by age and gender.  It is possible to use both of these tables on health insurance to calculate estimates of health insurance coverage by gender and race but constructing exact figures is not possible.\\
 \\
 <<var, echo=FALSE>>=
 #example2: (chance #4)
@@ -651,5 +651,6 @@ The American Community Survey (ACS) is a nationwide survey...
   concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
 \end{verbatim}
 \printbibliography
+
 
 \end{document}
