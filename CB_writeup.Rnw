@@ -50,7 +50,7 @@ sets = sets[,c(3,2,1)]
 tabl = xtable(sets, label="tab:datasettable", caption="Datasets and Years provided by the Census Bureau through the online API.")
 print(tabl, include.rownames=FALSE)
 @
-For the 2010 decennial census a valid HTTP GET request \hh{(see table \ref{tab:datasettable}) is formed} as follows:
+For the 2010 decennial census a valid HTTP GET request as follows (refer to the DATASET column in \ref{tab:datasettable}):
 \begin{verbatim}
 http://api.census.gov/data/2010/sf1?key=[KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
 \end{verbatim}
@@ -243,8 +243,6 @@ qplot(data=iowa.sd.geo, long, lat,
 
 \subsection{Finding Data Sets and Tables Structure}
 \label{sec:var}
-\hh{XXX could you go over this section again and remove all of the duplicates? - we only need HTML or XML descriptions, and we also only need either the JSON output or a table (e.g. table 3)}
-
 The ($[$VARIABLES$]$) parameters depends on dataset.  To track which datasets are available there is a master index of available dataset formatted in both JSON and XML provided by the Census Bureau.  The JSON file is available online at \url{http://api.census.gov/data.json} and the XML file is available online at \url{http://api.census.gov/data.xml}.  This master index includes necessary meta-information about each dataset including description, links to geography and variable information and contact information for maintainer of datasets.  The JSON format is formatted as follows:
 \begin{verbatim}
 {
@@ -277,31 +275,8 @@ The ($[$VARIABLES$]$) parameters depends on dataset.  To track which datasets ar
   },
 }
 \end{verbatim}
-The above excerpt from \url{http://api.census.gov/data.json} is the meta-information about the 2008-2012 ACS 5-year dataset.  For this dataset there are links to the associated geography file and to another JSON file $variables.json$ which is a list of variables available from this dataset.  For the above example the same meta-information is formatted in XML as follows:
-\begin{verbatim}
-<dataset vintage="2012" 
-  geographyLink="http://api.census.gov/data/2012/acs5/geography.xml"
-  variablesLink="http://api.census.gov/data/2012/acs5/variables.xml" 
-  tagsLink="http://api.census.gov/data/2012/acs5/tags.xml" 
-  examplesLink="http://api.census.gov/data/2012/acs5/examples.xml" 
-  documentationLink="http://www.census.gov/developers/" 
-  pod:webService="http://api.census.gov/data/2012/acs5" isAggregate="true" 
-  pod:accessLevel="public" 
-  dcat:contactPoint="Census Bureau Call Center" 
-  dct:identifier="2012acs5" 
-  pod:mbox="pio@census.gov" 
-  dct:publisher="US Census Bureau" 
-  dct:spatial="US" 
-  dct:temporal="2012">
-<dataset-name> <part name="acs5"/> </dataset-name>
-<dct:title>2012 American Community Survey: 5-Year Estimates</dct:title>
-<pod:bureauCode> 006:07 </pod:bureauCode>
-<dct:description>
-The American Community Survey (ACS) is a nationwide survey...
-</dct:description>
-<pod:reference link="http://www.census.gov/developers/"/>
-</dataset>
-\end{verbatim}
+The above excerpt from \url{http://api.census.gov/data.json} is the meta-information about the 2008-2012 ACS 5-year dataset.  For this dataset there are links to the associated geography file and to another JSON file $variables.json$ which is a list of variables available from this dataset.  To see the same meta-information in XML format please see appendeix in section \ref{sec:metaappend}.\\
+\\
 After selecting a dataset listed in the master index, the user will lookup what variables are available for that dataset.  The JSON and XML master index of datasets contain the location of {\tt variables.json} and {\tt variables.xml} respectively which list available variables available for that dataset.  Available variables are organized into tables referred to as \emph{concepts}; a \emph{concept} is a combination of factors.  For example, ``Health Insurance Coverage Status by Sex by Age" is a concept from the 2012 ACS.  Within each concept are \emph{labels}; a \emph{label} is a combination of levels for the factors within a concept.\\
 \\
 Within each concept there are multiple labels that provide information on different levels of each of the factors.  For example, the concept ``Health Insurance Coverage Status by Sex by Age" contains a label for males over 70 with health insurance.  This concept also contains labels for each combination of gender (male, female), age group (under 6, 6 to 17, 18 to 24, 25 to 34, 35 to 44, 45 to 54, 55 to 64, 65 to 74 and 75 and over) and health insurance coverage (with and without health insurance).  Some of the labels may also contain summary information in the form of totals.  For this concept there are labels for total number of males, total number of females and totals for males/females in each age group.\\
@@ -313,18 +288,14 @@ To lookup what variables are available, the {\tt variables.json} and {\tt variab
   "concept": "B27001.  Health Insurance Coverage Status by Sex by Age"
 },
 \end{verbatim}
-This describes label 056E of concept B27001.  This is a table of 75 and older females with health insurance.  The associated XML formatted version is formatted as follows:
-\begin{verbatim}
-<var xml:id="B27001_056E" 
-  label="Female:!!75 years and over:!!With health insurance coverage" 
-  concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
-\end{verbatim}
+This describes label 056E of concept B27001.  This is a table of 75 and older females with health insurance.  The associated XML formatted version can be found the appendix in section \ref{sec:varappend}.\\
+\\
 In both the XML and JSON formats the different levels of factors in the labels are separated by !!.  To form a valid GET request we take the header from the JSON file (or the $id$ from the XML file) and that will be the parameter we use for ($[$VARIABLES$]$).  The concept-label ID {\tt B27001\_056E} will request the ``75 and older female with health insurance" label from the ``health insurance coverage status by sex by age" concept.  A valid HTTP GET request for this is \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=B27001_056E&for=[GEOGRAPHY]}.
 
-<<dataexample, echo=FALSE, cache=TRUE, results='asis'>>=
+<<dataexample, echo=FALSE, cache=TRUE, results='asis', warning=FALSE>>=
 library(rjson)
 library(plyr)
-url = "http://api.census.gov/data/2012/acs5?key=b59354d11f96afaa8cbd17c5f9e5cdf7d057fc1c&get=B27001_056E,B27001_056E,NAME&for=county:*&in=state:06"
+url = "http://api.census.gov/data/2012/acs5?key=b59354d11f96afaa8cbd17c5f9e5cdf7d057fc1c&get=B27001_056E,B27001_057E,NAME&for=county:*&in=state:06"
 js = fromJSON(file=url)
 df = ldply(js)
 names(df) = df[1,]
@@ -333,32 +304,26 @@ df = df[-1,]
 print(xtable(head(df), label="tab:df", caption="Health insurance status of women 75 years and older in California by county from 2012 ACS 5-year data"))
 @
 
-Table \ref{tab:df} is information on health insurance for women 75 and older in California from the 2012 ACS 5-year data listed by county.  The HTTP GET request for this is \url{http://api.census.gov/data/2012/acs5?key=[KEY]&get=B27001_056E,B27001_057E,NAME&for=county:*&in=state:06}.  Labels 056E and 057E are labels for women 75 and older with health insurance and women 75 and older without health insurance respectively.  The result of our HTTP GET request is a JSON formatted file in the following format:
-\begin{verbatim}
-[["B27001_056E","B27001_057E","NAME","state","county"],
-["668","144","Alameda County, California","06","001"],
-["15","69","Alpine County, California","06","003"],
-["88","131","Amador County, California","06","005"],
-["238","127","Butte County, California","06","007"],
-["45","102","Calaveras County, California","06","009"],
-["98","26","Colusa County, California","06","011"],
-\end{verbatim}
-This indicates that there are 668 women over 75 in Alameda county that have health insurance and 144 women over 75 in Alameda county without health insurance.\\
+Table \ref{tab:df} is information on health insurance for women 75 and older in California from the 2012 ACS 5-year data listed by county.  The HTTP GET request for this is \url{http://api.census.gov/data/2012/acs5?key=[KEY]&get=B27001_056E,B27001_057E,NAME&for=county:*&in=state:06}.  Labels 056E and 057E are labels for women 75 and older with health insurance and women 75 and older without health insurance respectively.  Table \ref{tab:df} indicates that there are 45,052 women over 75 in Alameda county that have health insurance and there are 302 women over 75 in Alameda county without health insurance.\\
 \\
-The list of variables, $variables.json$ and $variables.xml$ not only contain a list of variables as described above but also include margin of error.  Estimates from the ACS are based on random sampling thus each of the estimates has a standard error.  The Census Bureau uses a 90$\%$ confidence level for their margin of error.  To find the associated margin of error for our variable we replace the last letter of label with an ``M" instead of an ``E".  For example, {\tt B27001\_056M} and {\tt B27001\_057M} are the associated standard errors for the previous example.  Standard errors have the exact same formatting as any other variable from the ACS: \hh{XXX I think it should be B27001\_057M instead of B27001\_057E}
-\begin{verbatim}
-[["B27001_056M","B27001_057E","NAME","state","county"],
-["356","302","Alameda County, California","06","001"],
-["13","0","Alpine County, California","06","003"],
-["51","0","Amador County, California","06","005"],
-["134","47","Butte County, California","06","007"],
-["99","0","Calaveras County, California","06","009"],
-["34","0","Colusa County, California","06","011"],
-\end{verbatim}
-Using the above table, $668 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
+The list of variables, $variables.json$ and $variables.xml$ not only contain a list of variables as described above but also include margin of error.  Estimates from the ACS are based on random sampling thus each of the estimates has a standard error.  The Census Bureau uses a 90$\%$ confidence level for their margin of error.  To find the associated margin of error for our variable we replace the last letter of label with an ``M" instead of an ``E".  For example, {\tt B27001\_056M} and {\tt B27001\_057M} are the associated standard errors for the previous example.  Table \ref{margin:df} gives a list of standard errors for the data in table \ref{tab:df}; standard errors have the exact same formatting as any other variable from the ACS.\\
+
+<<marginexample, echo=FALSE, cache=TRUE, results='asis', warning=FALSE>>=
+library(xtable)
+library(rjson)
+library(plyr)
+url = "http://api.census.gov/data/2012/acs5?key=b59354d11f96afaa8cbd17c5f9e5cdf7d057fc1c&get=B27001_056M,B27001_057M,NAME&for=county:*&in=state:06"
+js = fromJSON(file=url)
+df = ldply(js)
+names(df) = df[1,]
+df = df[-1,]
+print(xtable(head(df), label="margin:df", caption="Margin of error for health insurance status of women 75 years and older in California by county from 2012 ACS 5-year data"))
+@
+
+Using the above table, $45052 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
 
 \section{Limitations of the API}
-The paper by \citet{stangl:2013} talks about using the ACS as a dataset for classroom exercises \hh{(at the undergraduate level) with an emphasis on } how \hh{data collected from these surveys} are used to make important policy decisions.  The paper contains a number of classroom exercises that ask the reader to calculate  basic proportions about various demographic data such as health insurance coverage, marriage status and income.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample \hh{which constitutes a 0.005\% subsample of the 2010 ACS, or about a 0.0003\% representation of the US population. It would be advantageous by far to get corresponding answers based on the whole of the 2010 ACS}. \hh{XXX I will try to find an educational reference that realistic examples in the classroom are better for the learning outcome.}  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
+The paper by \citet{stangl:2013} talks about using the ACS as a dataset for classroom exercises (at the undergraduate level) with an emphasis on how data collected from these surveys is used to make important policy decisions.  The paper contains a number of classroom exercises that ask the reader to calculate  basic proportions about various demographic data such as health insurance coverage, marriage status and income.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample \hh{which constitutes a 0.005\% subsample of the 2010 ACS, or about a 0.0003\% representation of the US population. It would be advantageous by far to get corresponding answers based on the whole of the 2010 ACS}. \hh{XXX I will try to find an educational reference that realistic examples in the classroom are better for the learning outcome.}  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
 \\
 Using the Census Bureau's online API for these exercises presents us with three main problems:
 \begin{enumerate}
@@ -650,7 +615,41 @@ The Census Bureau has created numerous tools to make it easier for the public to
 Due to the technical knowledge required to access the online API, clearly the audience is not local business leaders or congressional staffers.  It is unlikely someone without significant programming knowledge would be able to understand the JSON and XML formats required to find datasets and variables.  Due to the structure of the data and the emphasis on frequency instead of proportions, the online API is also not designed for statisticians.  The form of the data limits the available variables for each data table and makes it difficult to subset on variables.  Right now the online API is only useful to application developers who cannot store the contents of the entire ACS datasets.  With some restructuring the API could be a useful tool for statisticians since it allows for a detailed look down to the census tract level and it allows access to data without downloading the entire dataset.
 
 \section{Appendix}
+\subsection{Meta-information for datasets}
+\label{sec:metaappend}
+XML formatted meta-information about the 2008-2012 ACS 5-year dataset:
+\begin{verbatim}
+<dataset vintage="2012" 
+  geographyLink="http://api.census.gov/data/2012/acs5/geography.xml"
+  variablesLink="http://api.census.gov/data/2012/acs5/variables.xml" 
+  tagsLink="http://api.census.gov/data/2012/acs5/tags.xml" 
+  examplesLink="http://api.census.gov/data/2012/acs5/examples.xml" 
+  documentationLink="http://www.census.gov/developers/" 
+  pod:webService="http://api.census.gov/data/2012/acs5" isAggregate="true" 
+  pod:accessLevel="public" 
+  dcat:contactPoint="Census Bureau Call Center" 
+  dct:identifier="2012acs5" 
+  pod:mbox="pio@census.gov" 
+  dct:publisher="US Census Bureau" 
+  dct:spatial="US" 
+  dct:temporal="2012">
+<dataset-name> <part name="acs5"/> </dataset-name>
+<dct:title>2012 American Community Survey: 5-Year Estimates</dct:title>
+<pod:bureauCode> 006:07 </pod:bureauCode>
+<dct:description>
+The American Community Survey (ACS) is a nationwide survey...
+</dct:description>
+<pod:reference link="http://www.census.gov/developers/"/>
+</dataset>
+\end{verbatim}
 
+\subsection{Meta-information for variables}
+\label{sec:varappend}
+\begin{verbatim}
+<var xml:id="B27001_056E" 
+  label="Female:!!75 years and over:!!With health insurance coverage" 
+  concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
+\end{verbatim}
 \printbibliography
 
 \end{document}
