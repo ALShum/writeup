@@ -16,12 +16,12 @@
 \maketitle
 
 \begin{abstract}
-The American Community Survey is an ongoing survey by the US Census Bureau that provides yearly demographic data.  The Census Bureau has released an online API to give the public access to the data.
+The American Community Survey is an ongoing survey by the US Census Bureau that provides yearly demographic data.  The Census Bureau has various tools for giving the public access to their data.  Recently the Census Bureau released an online API to give the public access to the Decennial census and the American Community Census.  We will discuss how to find available datasets and available demographic variables as well as some of the shortcomings of the online API.  The main shortcomings are related to how the data is organized and the limited number of variables accessible from the online API.  We will also provide examples on what is possible using the online API.
 
 \end{abstract}
 
 \section{Introduction}
-The United States Census Bureau has been conducting a decennial census since 1790.  Originally this census was  simply to count the population across the country.  More recently the decennial census includes a short-form asking for name, sex, age, and a few other demographic variables.  About one in six households also received a long-form of the census consisting of additional socioeconomic questions.  After the 2000 decennial census many of the long-form questions were collected as part of a new survey: the American Community Survey (ACS).  \\
+The United States Census Bureau has been conducting a decennial census since 1790.  Originally this census was simply to count the population across the country.  More recently the decennial census includes a short-form asking for name, sex, age, and a few other demographic variables.  About one in six households also received a long-form of the census consisting of additional socioeconomic questions.  After the 2000 decennial census many of the long-form questions were collected as part of a new survey: the American Community Survey (ACS).  \\
 \\
 The ACS is an ongoing yearly survey that collects additional demographic variables including but not limited to age, sex, race, income and education.  Unlike the decennial census, the American Community Survey is distributed based on a random selection of addresses every year.  Although the ACS is only sent to a sample of all US households, this data is meant to provide more up to date information than the Census Bureau's decennial census.  Completion of both the decennial census and the American Community Survey are required by law (Title 18 U.S.C Section 3571 and Section 3559); however, it should be noted that the Census Bureau has not opted to prosecute anyone for failure to complete the decennial census or the ACS.  Despite the lack of enforcement, the ACS still reports a response rate of 97\%.\\ %http://www.politifact.com/texas/statements/2014/jan/09/us-census-bureau/americans-must-answer-us-census-bureau-survey-law-/
 \\
@@ -608,6 +608,13 @@ ny2.df = join(ny.points, ny.shape@data, by="id")
 #by county
 #subset(fips.county, State=='NY') #61, 5, 47, 81, 85
 qmap("brooklyn new york city", zoom=11) + geom_path(aes(x = long, y = lat, group=group, order=order), data = subset(ny2.df, COUNTYFP %in% c("061", "005", "047", "081", "085")))
+#use NAME or NAMELSAD
+
+
+
+
+NYC = geo.make(state="NY", county=c("New York County", "Bronx County", "Kings County", "Queens County", "Richmond County"), tract="*")
+f.nyc = acs.fetch(endyear = 2012, span = 5, geography = NYC, table.name = c("In Combination With One Or More Other Races"), col.names="pretty")
 @
 \section{Conclusion}
 The Census Bureau has created numerous tools to make it easier for the public to access their data.  These tools include Easy Stats (\url{http://www.census.gov/easystats/}), QuickFacts (\url{http://quickfacts.census.gov/qfd/index.html}), DataFerrett (\url{http://dataferrett.census.gov/}), FTP access to data tables and summary files (\url{http://www2.census.gov/}), the online developer's API (\url{api.census.gov}) and numerous other tools.  Each of these tools is targetted for a different audience: congressional staffers, emergency planners, business owners or others who need access to demographic data.  Who is the target audience for the online developer's API?\\
