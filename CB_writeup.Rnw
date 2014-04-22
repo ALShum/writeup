@@ -309,7 +309,7 @@ df = ldply(js)
 names(df) = df[1,]
 df = df[-1,]
 
-print(xtable(head(df), label="tab:df", caption="Number of  women 75 years and older with (056E) and without (057E) halth insurance in California by county from 2012 ACS 5-year data"))
+print(xtable(head(df), label="tab:df", caption="Number of  women 75 years and older with (056E) and without (057E) health insurance in California by county from 2012 ACS 5-year data"))
 @
 
 %Table \ref{tab:df} is information on health insurance for women 75 and older in California from the 2012 ACS 5-year data listed by county.  The HTTP GET request for this is \url{http://api.census.gov/data/2012/acs5?key=[KEY]&get=B27001_056E,B27001_057E,NAME&for=county:*&in=state:06}.  Labels 056E and 057E are labels for women 75 and older with health insurance and women 75 and older without health insurance respectively.  
@@ -339,8 +339,12 @@ Using the Census Bureau's online API for these exercises presents us with three 
 \begin{enumerate}
 \item the structure of data in the public use microdata sample is different from data from the online API,
 \item proportions and standard errors are not included,
-\item certain combination of variables are simply not available from the online API.
+\item some combination of variables are simply not available from the online API.
 \end{enumerate}
+
+\hh{We will highlight each of these issues in this section following along some of Stangl et al's examples:}
+
+\hh{XXX this section is still a bit hard to follow. But I think, it just needs a bit of additional structure. Could you add (verbatim) the actual question that Stangl et al are asking the students to investigate? That would help for a start. Then you could switch to a two column representation with the analyses side by side (not sure that it'll work, but it's worth a try).}
 
 <<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
 library(xtable)
@@ -350,7 +354,7 @@ print(xtable(head(acsdat),  label="tab:table", caption="Random subset of 2010 AC
 #each table has a different "base population"
 #sometimes base population for similar variables does not add up
 @
-Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See table \ref{tab:table} for a small subset of the data used by Morgan et al.\\
+Data from the ACS public use microdata sample is organized to describe individuals.  Each row of the dataset describes an anonymized individual and each column represents a different demographic variable.  See table \ref{tab:table} for a small subset of the data used by Stangl et al.\\
 <<example, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Health care data from online API'>>=
 library(acs)
 library(xtable)
@@ -395,7 +399,7 @@ digits(tab2) = rep(0,6)
 print(tab2, include.rownames=FALSE)
 @
 
-The Census Bureau has historically provided information in the form of  counts.  However, the nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  This dataset is reshaped into a tidy form.  In this dataset we have gender, age and enrollment status (public university, private university or not enrolled).  California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population.\\
+The Census Bureau has historically provided information in the form of  counts.  However, the nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  This dataset is reshaped into a tidy form.  In this dataset we have gender, age and enrollment status (public university, private university or not enrolled).  California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population. \hh{XXX you might need to be a bit careful with that statement - I just found variables PE and PM in the acs variables.json file that suggest that there are now perentages and their margins included ... it doesn't mean that your point is void - it's still completely valid, but needs an extra sentence, such as  ``newest developments in the API seem to go in the direction to also include percentages and their margins, see e.g. ... ''}\\
 <<freq, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
 library(reshape2)
 library(acs)
@@ -561,6 +565,7 @@ As a guideline, the Census Bureau recommends comparing similar length datasets t
 
 
 \section{Examples from ACS}
+\hh{XXX this section still needs a bit of text - mainly motivation about how cool these examples are. Also list a couple of websites that make use of the API (you've been showing me these examples before, just find their urls again - you could even include screenshots.) }
 <<NY, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 library(plyr)
 library(acs)
@@ -653,9 +658,12 @@ final$race = unlist(apply(final[,19:24], 1, function(x){
 }))
 @
 \section{Conclusion}
+\hh{XXX the first part of this section should go into the intro. (Up to about `Each of these tools ... ') Add an additional sentence here instead that summarizes the `multitude of different data products' offered by the Census Bureau .. }
 The Census Bureau has created numerous tools to make it easier for the public to access their data.  These tools include Easy Stats (\url{http://www.census.gov/easystats/}), QuickFacts (\url{http://quickfacts.census.gov/qfd/index.html}), DataFerrett (\url{http://dataferrett.census.gov/}), FTP access to data tables and summary files (\url{http://www2.census.gov/}), the online developer's API (\url{api.census.gov}) and numerous other tools.  Each of these tools is targetted for a different audience: congressional staffers, emergency planners, business owners or others who need access to demographic data.  Who is the target audience for the online developer's API?\\
 \\
 Due to the technical knowledge required to access the online API, clearly the audience is not local business leaders or congressional staffers.  It is unlikely someone without significant programming knowledge would be able to understand the JSON and XML formats required to find datasets and variables.  Due to the structure of the data and the emphasis on frequency instead of proportions, the online API is also not designed for statisticians.  The form of the data limits the available variables for each data table and makes it difficult to subset on variables.  Right now the online API is only useful to application developers who cannot store the contents of the entire ACS datasets.  With some restructuring the API could be a useful tool for statisticians since it allows for a detailed look down to the census tract level and it allows access to data without downloading the entire dataset.
+
+\hh{XXX your shiny applet?}
 
 \section{Appendix}
 \subsection{Meta-information for datasets}
