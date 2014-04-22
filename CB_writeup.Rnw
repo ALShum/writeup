@@ -626,6 +626,31 @@ qmap("brooklyn new york city", zoom=11) + geom_path(aes(x = long, y = lat, group
 
 NYC = geo.make(state="NY", county=c("New York County", "Bronx County", "Kings County", "Queens County", "Richmond County"), tract="*")
 f.nyc = acs.fetch(endyear = 2012, span = 5, geography = NYC, table.name = c("In Combination With One Or More Other Races"), col.names="pretty")
+#merge shapefile data with ACS data
+f.nyc = data.frame(f.nyc@estimate)
+split=ldply(strsplit(rownames(f.nyc), ","))
+f.nyc$state = tolower(sub("^.*, ", "", rownames(f.nyc)))
+f.nyc$tract = tolower(gsub("Census Tract ", "", split[,1]))
+f.nyc$county = tolower(gsub("^[ ]","",split[,2]))
+f.nyc$county = gsub(" county", "", f.nyc$county)
+f.nyc$county = gsub("kings", "brooklyn", f.nyc$county)
+f.nyc$county = gsub("new york", "manhattan", f.nyc$county)
+f.nyc$county = gsub("richmond", "staten island", f.nyc$county)
+rownames(f.nyc) = NULL
+f.nyc$tract = as.numeric(f.nyc$tract)
+
+
+
+
+ny.df$CTLabel = as.numeric(as.character(ny.df$CTLabel))
+ny.df$BoroName = tolower(ny.df$BoroName)
+
+final = merge(x = ny.df, y = f.nyc, by.x = c("CTLabel", "BoroName"), by.y = c("tract", "county"), all.x=TRUE)
+names(final)[19:24] = c("white", "black", "indian", "asian", "hawaiian", "other")
+final$race = unlist(apply(final[,19:24], 1, function(x){
+  if(sum(is.na(x)) == length(19:24)) return("NA")
+  else return(names(which.max(x)))
+}))
 @
 \section{Conclusion}
 The Census Bureau has created numerous tools to make it easier for the public to access their data.  These tools include Easy Stats (\url{http://www.census.gov/easystats/}), QuickFacts (\url{http://quickfacts.census.gov/qfd/index.html}), DataFerrett (\url{http://dataferrett.census.gov/}), FTP access to data tables and summary files (\url{http://www2.census.gov/}), the online developer's API (\url{api.census.gov}) and numerous other tools.  Each of these tools is targetted for a different audience: congressional staffers, emergency planners, business owners or others who need access to demographic data.  Who is the target audience for the online developer's API?\\
