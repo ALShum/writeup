@@ -617,6 +617,7 @@ library(plyr)
 library(ggmap)
 library(acs)
 
+#get shape file for NY
 ny.shape = readShapeSpatial("Z:/My Documents/shapes/tl_2013_36_tract.shp")
 ny.shape@data$id = rownames(ny.shape@data)
 ny.points = fortify(ny.shape)
@@ -626,9 +627,7 @@ ny2.df = join(ny.points, ny.shape@data, by="id")
 qmap("brooklyn new york city", zoom=11) + geom_path(aes(x = long, y = lat, group=group, order=order), data = subset(ny2.df, COUNTYFP %in% c("061", "005", "047", "081", "085")))
 #use NAME or NAMELSAD
 
-
-
-
+#get data from ACS
 NYC = geo.make(state="NY", county=c("New York County", "Bronx County", "Kings County", "Queens County", "Richmond County"), tract="*")
 f.nyc = acs.fetch(endyear = 2012, span = 5, geography = NYC, table.name = c("In Combination With One Or More Other Races"), col.names="pretty")
 #merge shapefile data with ACS data
@@ -638,24 +637,28 @@ f.nyc$state = tolower(sub("^.*, ", "", rownames(f.nyc)))
 f.nyc$tract = tolower(gsub("Census Tract ", "", split[,1]))
 f.nyc$county = tolower(gsub("^[ ]","",split[,2]))
 f.nyc$county = gsub(" county", "", f.nyc$county)
-f.nyc$county = gsub("kings", "brooklyn", f.nyc$county)
-f.nyc$county = gsub("new york", "manhattan", f.nyc$county)
-f.nyc$county = gsub("richmond", "staten island", f.nyc$county)
+#f.nyc$county = gsub("kings", "brooklyn", f.nyc$county)
+#f.nyc$county = gsub("new york", "manhattan", f.nyc$county)
+#f.nyc$county = gsub("richmond", "staten island", f.nyc$county)
 rownames(f.nyc) = NULL
 f.nyc$tract = as.numeric(f.nyc$tract)
 
+#lookup county names based on COUNTYFP number
+ny2.df$NAME = as.numeric(as.character(ny2.df$NAME))
+ny2.df$COUNTYFP = as.numeric(as.character(ny2.df$COUNTYFP))
+ny3.df = merge(x = ny2.df, y = subset(fips.county, State == 'NY'), by.x = "COUNTYFP", by.y = "County.ANSI")
+ny3.df$County.Name = tolower(ny3.df$County.Name)
+ny3.df$County.Name = gsub(" county", "", ny3.df$County.Name)
 
-
-
-ny.df$CTLabel = as.numeric(as.character(ny.df$CTLabel))
-ny.df$BoroName = tolower(ny.df$BoroName)
-
-final = merge(x = ny.df, y = f.nyc, by.x = c("CTLabel", "BoroName"), by.y = c("tract", "county"), all.x=TRUE)
-names(final)[19:24] = c("white", "black", "indian", "asian", "hawaiian", "other")
-final$race = unlist(apply(final[,19:24], 1, function(x){
-  if(sum(is.na(x)) == length(19:24)) return("NA")
+#merge shape files with ACS data by county name
+final = merge(x = ny3.df, y = f.nyc, by.x = c("NAME", "County.Name"), by.y = c("tract", "county"), all.x=TRUE)
+names(final)[24:29] = c("white", "black", "indian", "asian", "hawaiian", "other")
+final$race = unlist(apply(final[,24:29], 1, function(x){
+  if(sum(is.na(x)) == length(24:29)) return("NA")
   else return(names(which.max(x)))
 }))
+
+qmap("brooklyn new york city", zoom=10) + geom_path(aes(x = long, y = lat, group=group, order=order), data = subset(final, COUNTYFP %in% c(61, 5, 47, 81, 85))) + geom_polygon(aes(x = long, y = lat, group = group, order = order, fill = race, alpha = 0.15), data = subset(final, COUNTYFP %in% c(61, 5, 47, 81, 85)))
 @
 \section{Conclusion}
 \hh{XXX the first part of this section should go into the intro. (Up to about `Each of these tools ... ') Add an additional sentence here instead that summarizes the `multitude of different data products' offered by the Census Bureau .. }
