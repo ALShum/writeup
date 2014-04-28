@@ -19,12 +19,6 @@
 The American Community Survey is an ongoing survey by the US Census Bureau that provides yearly demographic data.  The Census Bureau has various tools for giving the public access to their data.  Recently the Census Bureau released an online API to give the public access to the Decennial census and the American Community Census.  We will discuss how to find available datasets and available demographic variables as well as some of the shortcomings of the online API.  The main shortcomings are related to how the data is organized and the limited number of variables accessible from the online API.  We will also provide examples on what is possible using the online API.
 
 \hh{for all the tables: numbers should be aligned right.}
-
-\hh{don't use the math environment for italics - use the command} \begin{verbatim}
-\emph
-\end{verbatim} for italics, and \begin{verbatim}
-\tt
-\end{verbatim} for any code related things.
 \end{abstract}
 
 \section{Introduction}
@@ -44,10 +38,10 @@ http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=[GEOGR
 The bracketed expressions in the above URL represent  parameters that need to be specified depending on dataset, time frame, geographic region of interest and demographic variables.  Each of the bracketed expressions is detailed in the following sections.  
 
 \subsection{Key}
-$[$KEY$]$ is an id code required to perform a valid GET request.  A developer's key uniquely identifies anyone who requests data from the API.  Requesting a key can be done by registering at \url{http://www.census.gov/developers/tos/key_request.html}.
+{\tt [KEY]} is an id code required to perform a valid GET request.  A developer's key uniquely identifies anyone who requests data from the API.  Requesting a key can be done by registering at \url{http://www.census.gov/developers/tos/key_request.html}.
 
 \subsection{Year and Dataset}
-$[$YEAR$]$ and $[$DATASET$]$ specify the dataset and year of the data.  The available datasets include the decennial census and the ACS.   ACS datasets are provided in form of 1-year, 3-year and 5-year aggregates.  The $[$YEAR$]$ variable for the ACS datasets indicates the final year in the aggregate.  For example, the 2012 5-year ACS dataset is the ACS dataset that spans 2008-2012 and the 2012 3-year ACS dataset is the ACS dataset that spans 2010-2012.  For the decennial census the $[$YEAR$]$ indicates the year the census data was collected.  The $[$DATASET$]$ parameter is an abbreviation for the dataset assigned by the Census Bureau.  For example, the ACS 5-year dataset is $acs5$ and the ACS 1-year dataset is $acs1$.  Table \ref{tab:datasettable} gives an overview of timeframes, datasets and the associated abbreviations assigned by the census bureau.\\
+{\tt [YEAR]}and {\tt [DATASET]} specify the dataset and year of the data.  The available datasets include the decennial census and the ACS.   ACS datasets are provided in form of 1-year, 3-year and 5-year aggregates.  The {\tt [YEAR]} variable for the ACS datasets indicates the final year in the aggregate.  For example, the 2012 5-year ACS dataset is the ACS dataset that spans 2008-2012 and the 2012 3-year ACS dataset is the ACS dataset that spans 2010-2012.  For the decennial census the {\tt [YEAR]} indicates the year the census data was collected.  The {\tt [DATASET]} parameter is an abbreviation for the dataset assigned by the Census Bureau.  For example, the ACS 5-year dataset is $acs5$ and the ACS 1-year dataset is $acs1$.  Table \ref{tab:datasettable} gives an overview of timeframes, datasets and the associated abbreviations assigned by the census bureau.\\
 <<datasettable, echo=FALSE, warning=FALSE, message=FALSE, results='asis'>>=
 library(xtable)
 sets = data.frame(Description = c("Decennial Census", "ACS 5-year", "ACS 3-year", "ACS 1-year"),
@@ -140,7 +134,7 @@ Summary Level & Description \\
 
 From table \ref{tab:geolist}, there is a specific hierarchy of geographic regions and specific valid combinations of geographic regions.  Different ACS datasets  have different geographic regions available and different requirements for geographic regions.  For example, the 2010 decennial census requires that we specify a state for zip code tabulation areas.  By contrast, the 2012 ACS 5-year dataset has zip code tabulation areas that do not require a containing state for a valid GET request.  The 2010 ACS 5-year dataset simply does not have zip code tabulation areas available at all.  In order to understand which geographic regions are available for datasets and which combination of geographic regions are valid we will discuss the Census Bureaus documentation scheme for each of their datasets in the section \ref{sec:geo}.\\
 \\
-Finding available demographic variables and forming a valid GET request for ($[$VARIABLES$]$) requires a more detailed knowledge of how the census datasets are organized which variables are made available.  We discuss finding demographic variables and their format and structure in section \ref{sec:var}.
+Finding available demographic variables and forming a valid GET request for {\tt [VARIABLES]} requires a more detailed knowledge of how the census datasets are organized which variables are made available.  We discuss finding demographic variables and their format and structure in section \ref{sec:var}.
 
 \section{Metafiles}
 Each dataset on the Census Bureau API includes documentation for geography and variables in the form of JSON and XML files.  JSON and XML are two different file formats that are machine generated datasets designed to store meta information including file descriptions and structural information.  JSON stands for JavaScript Object Notation and is designed to be a human readable format for sending data.  The JSON data structure is centered around name-value pairs.  XML stands for Extensible Markup Language and is similar in structure to the HTML format used for webpages.  XML is another format for sending and storing data.  It is formatted in a tree-like structure with a hierarchy of categories and associated values.  These JSON and XML files contain the specific requirements for geography and for the demographic variables.
@@ -250,7 +244,7 @@ qplot(data=iowa.sd.geo, long, lat,
 
 \subsection{Finding Data Sets and Tables Structure}
 \label{sec:var}
-The ($[$VARIABLES$]$) parameters depends on dataset.  To track which datasets are available there is a master index of available dataset formatted in both JSON and XML provided by the Census Bureau.  The JSON file is available online at \url{http://api.census.gov/data.json} and the XML file is available online at \url{http://api.census.gov/data.xml}.  This master index includes necessary meta-information about each dataset including description, links to geography and variable information and contact information for maintainer of datasets.  The JSON format is formatted as follows:
+The {\tt [VARIABLES]} parameters depends on dataset.  To track which datasets are available there is a master index of available dataset formatted in both JSON and XML provided by the Census Bureau.  The JSON file is available online at \url{http://api.census.gov/data.json} and the XML file is available online at \url{http://api.census.gov/data.xml}.  This master index includes necessary meta-information about each dataset including description, links to geography and variable information and contact information for maintainer of datasets.  The JSON format is formatted as follows:
 \begin{verbatim}
 {
   "c_vintage": 2012,
@@ -295,10 +289,10 @@ To lookup what variables are available, the {\tt variables.json} and {\tt variab
   "concept": "B27001.  Health Insurance Coverage Status by Sex by Age"
 },
 \end{verbatim}
-This describes label 056E of concept B27001.  This is a table of 75 and older females with health insurance. \hh{Label 057E describes the corresponding number of  females aged 75 and older without health insurance. Both of these numbers are given in table \ref{tab:df}.}
+This describes label 056E of concept B27001.  This is a table of 75 and older females with health insurance. Label 057E describes the corresponding number of females aged 75 and older without health insurance. Both of these numbers are given in table \ref{tab:df}.
 The associated XML formatted version can be found the appendix in section \ref{sec:varappend}.\\
 \\
-In both the XML and JSON formats the different levels of factors in the labels are separated by !!.  To form a valid GET request we take the header from the JSON file (or the $id$ from the XML file) and that will be the parameter we use for ($[$VARIABLES$]$).  The concept-label ID {\tt B27001\_056E} will request the ``75 and older female with health insurance" label from the ``health insurance coverage status by sex by age" concept.  A valid HTTP GET request for this is \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=B27001_056E, B27001_057E&for=[GEOGRAPHY]}.
+In both the XML and JSON formats the different levels of factors in the labels are separated by !!.  To form a valid GET request we take the header from the JSON file (or the {\emph id} from the XML file) and that will be the parameter we use for {\tt VARIABLES}.  The concept-label ID {\tt B27001\_056E} will request the ``75 and older female with health insurance" label from the ``health insurance coverage status by sex by age" concept.  A valid HTTP GET request for this is \url{http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=B27001_056E, B27001_057E&for=[GEOGRAPHY]}.
 
 <<dataexample, echo=FALSE, cache=TRUE, results='asis', warning=FALSE>>=
 library(rjson)
@@ -316,7 +310,7 @@ print(xtable(head(df), label="tab:df", caption="Number of  women 75 years and ol
 Table \ref{tab:df} indicates that there are 45,052 women over 75 in Alameda county that have health insurance and there are 302 women over 75 in Alameda county without health insurance.\\
 \\
 %The list of variables, 
-\hh{The files} {\tt variables.json} and {\tt variables.xml} not only contain a list of variables as described above but also include margin of error.  Estimates from the ACS are based on random sampling thus each of the estimates has a standard error.  The Census Bureau uses a 90$\%$ confidence level for their margin of error.  To find the associated margin of error for our variable we replace the last letter of label with an ``M" instead of an ``E".  For example, {\tt B27001\_056M} and {\tt B27001\_057M} are the associated standard errors for the previous example.  Table \ref{margin:df} gives a list of standard errors for the data in table \ref{tab:df}; standard errors have the exact same formatting as any other variable from the ACS.\\
+The files {\tt variables.json} and {\tt variables.xml} not only contain a list of variables as described above but also include margin of error.  Estimates from the ACS are based on random sampling thus each of the estimates has a standard error.  The Census Bureau uses a 90$\%$ confidence level for their margin of error.  To find the associated margin of error for our variable we replace the last letter of label with an ``M" instead of an ``E".  For example, {\tt B27001\_056M} and {\tt B27001\_057M} are the associated standard errors for the previous example.  Table \ref{margin:df} gives a list of standard errors for the data in table \ref{tab:df}; standard errors have the exact same formatting as any other variable from the ACS.\\
 
 <<marginexample, echo=FALSE, cache=TRUE, results='asis', warning=FALSE>>=
 library(xtable)
@@ -330,22 +324,23 @@ df = df[-1,]
 print(xtable(head(df), label="margin:df", caption="Margin of error for health insurance status of women 75 years and older in California by county from 2012 ACS 5-year data"))
 @
 
-\hh{Based on tables \ref{tab:df} and \ref{margin:df}}, $45052 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
+Based on tables \ref{tab:df} and \ref{margin:df}, $45052 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
 
 \section{Limitations of the API}
 The paper by \citet{stangl:2013} discusses the use of the American Community Survey as a dataset for classroom exercises (at the undergraduate level) with an emphasis on how data collected from these surveys is used to make important policy decisions.  The paper contains a number of classroom exercises that ask the reader to calculate  basic proportions about various demographic data such as health insurance coverage, marriage status and income.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample which constitutes a 0.005\% subsample of the 2010 ACS, or about a 0.0003\% representation of the US population. It would be advantageous by far to get corresponding answers based on the whole of the 2010 ACS. \hh{XXX I will try to find an educational reference that realistic examples in the classroom are better for the learning outcome.}  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
 \\
 Using the Census Bureau's online API for these exercises presents us with three main problems:
 \begin{enumerate}
-\item the structure of data in the public use microdata sample is different from data from the online API,
-\item proportions and standard errors are not included,
-\item some combination of variables are simply not available from the online API.
+\item the structure of data in the public use microdata sample is different from data from the online API
+\item proportions and standard errors are not included
+\item some combination of variables are simply not available from the online API
 \end{enumerate}
 
-\hh{We will highlight each of these issues in this section following along some of Stangl et al's examples:}
+We will highlight each of these issues in this section following along some of Stangl et al's examples.
 
 \hh{XXX this section is still a bit hard to follow. But I think, it just needs a bit of additional structure. Could you add (verbatim) the actual question that Stangl et al are asking the students to investigate? That would help for a start. Then you could switch to a two column representation with the analyses side by side (not sure that it'll work, but it's worth a try).}
 
+\subsection{Structure of the Data}
 <<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
 library(xtable)
 acsdat = read.csv("datasetSTANGL2013.csv") #chance article dataset
@@ -371,8 +366,7 @@ print(tab1)
 @
 By contrast the online API does not provide individual specific data.  When we perform a HTTP GET request we must specify what geographic level of detail we want.  The geographic level of detail does not go below the county subdivision or census tract level.  Instead of individual specific data we have data that has been aggregated for an entire geographic region.  This is likely due to privacy reasons; if we have individual specific data for a dozen demographic variables along with geographic information it might be possible to reveal this individual's identity.  \\
 \\
-\hh{How do you actually get the data from the survey? - Mention the acs package XXX. Does that package allow a general access to the API or only to the acs data? }
-In table \ref{fig:example} we specify state level summaries for health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table and as previously mentioned we refer to this as a {\emph concept} and each column in table \ref{fig:example} is referred a {\emph label}.  The first label of each concept is an overall total; the total number of people in the specified geographic region that answered questions relating to the requested concept.   Subsequent labels are subsets of this overall total.  We have conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: {\tt B27001\_001},  { \tt B27001\_002} etc.\\
+We can access data from the API using the acs (\citet{acs}) package in R.  In table \ref{fig:example} we have used the acs package to find state level summaries of health insurance coverage status for various age groups by gender (from the census API this is table B27001).  Each variable is in the form of a table and as previously mentioned we refer to this as a {\emph concept} and each column in table \ref{fig:example} is referred a {\emph label}.  The first label of each concept is an overall total; the total number of people in the specified geographic region that answered questions relating to the requested concept.   Subsequent labels are subsets of this overall total.  We have conveniently renamed column headers in table \ref{fig:example}; the naming convention from data provided by the API is to enumerate each label with the table name: {\tt B27001\_001},  { \tt B27001\_002} etc.\\
 \\
 The way this data is organized is not in a tidy format, see \cite{hadley:2014}.  Instead it appears that the columns contain additional categorical information: gender, age and insurance.  In table \ref{fig:tidy} we have tidied up the data so that each row is an observation and each column is a variable.  Originally table B27001 contains a number of \emph{total} columns: overall total, total number of males, total number of females, and within each gender a total number of people within an age group.  In reshaping this data, we felt that these total columns were redundant once the data is in a tidy form. \\
 
@@ -399,7 +393,9 @@ digits(tab2) = rep(0,6)
 print(tab2, include.rownames=FALSE)
 @
 
-The Census Bureau has historically provided information in the form of  counts.  However, the nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  This dataset is reshaped into a tidy form.  In this dataset we have gender, age and enrollment status (public university, private university or not enrolled).  California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population. \hh{XXX you might need to be a bit careful with that statement - I just found variables PE and PM in the acs variables.json file that suggest that there are now perentages and their margins included ... it doesn't mean that your point is void - it's still completely valid, but needs an extra sentence, such as  ``newest developments in the API seem to go in the direction to also include percentages and their margins, see e.g. ... ''}\\
+\subsection{Calculating Proportions}
+The Census Bureau has historically provided information in the form of counts and for a majority of available datasets data is presented as a nominal frequency instead of a proportion.  Nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  This dataset is reshaped into a tidy form.  In this dataset we have gender, age and enrollment status (public university, private university or not enrolled).  California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population.
+
 <<freq, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
 library(reshape2)
 library(acs)
@@ -428,7 +424,7 @@ tab1 = xtable(head(univ2), label="tab:freq", caption="University enrollment by g
 digits(tab1) = rep(0,6)
 print(tab1, include.rownames=FALSE)
 @
-The size of the population depends on the topic of interest.  One potential topic of interest is gender differences in public university enrollment in college aged individuals.  In this case our population is the total number of college aged students enrolled in a public university.  In table \ref{tab:freq2}, we modify the above table and calculate the percentage of males/females for each combination of school and age group for each state.\\
+The size of the population depends on the topic of interest.  One potential topic of interest is gender differences in public university enrollment in college aged individuals.  In this case our population is the total number of college aged students enrolled in a public university.  Proportions are not available for most variables and must be calculated by the user; in table \ref{tab:freq2}, we modify the above table and calculate the percentage of males/females for each combination of school and age group for each state.\\
 <<freq2, dependson='freq', echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
 univ3 = subset(univ2, school=="public")
 tot = ddply(univ3, .(state, school, age), transform, tot = sum(freq))
@@ -445,8 +441,15 @@ SE(A/B) = 1/B\sqrt{SE(A)^2 - \left(A/B\right)^2 SE(B)^2}
 \end{align*}
 In calculating proportions we must often add different estimates together for different labels.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.\\
 %https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
-\\
-Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} there are limited combinations of variables  available.  One of the exercises in \citet{stangl:2013} is to compare health insurance status by race.  This exercise using the public use microsample is straight forward and requires a single line of code using the plyr \cite{plyr} package in R.  We can summarise percentage of people with health insurance by race as follows:
+
+\subsection{Variable Access}
+Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} there are limited combinations of variables available.  The following is one of the exercises in \citet{stangl:2013} to compare health insurance status by race:
+
+\begin{quote}
+Of the 1000 people in our dataset, 761 are white, 106 are black, 70 are asian and 63 are other races.  The sample proportions of people who have health insurance by racial group are $\hat{p}_{white} = 0.880$, $\hat{p}_{black} = 0.811$, $\hat{p}_{asian} = 0.843$, $\hat{p}_{other} = 0.730$.  Create the two-way table for counts of health insurance by race.
+\end{quote}
+
+Confirming the numbers in this exercise using the public use microsample is straight forward and requires a single line of code using the plyr \cite{plyr} package in R.  We can summarise percentage of people with health insurance by race as follows:
 <<stangl1, warning=FALSE, message=FALSE, cache=TRUE, tidy=FALSE>>=
 library(plyr)
 acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
@@ -565,50 +568,7 @@ As a guideline, the Census Bureau recommends comparing similar length datasets t
 
 
 \section{Examples from ACS}
-\hh{XXX this section still needs a bit of text - mainly motivation about how cool these examples are. Also list a couple of websites that make use of the API (you've been showing me these examples before, just find their urls again - you could even include screenshots.) }
-<<NY, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
-library(plyr)
-library(acs)
-
-NYC = geo.make(state="NY", county=c("New York County", "Bronx County", "Kings County", "Queens County", "Richmond County"), tract="*")
-f.nyc = acs.fetch(endyear = 2012, span = 5, geography = NYC, table.name = c("In Combination With One Or More Other Races"), col.names="pretty")
-
-library(maptools)
-ny.tracts = readShapeSpatial("Z:/My Documents/shapes/nyct2010.shp")
-ny.tracts@data$id = rownames(ny.tracts@data)
-ny.points = fortify(ny.tracts)
-ny.df = join(ny.points, ny.tracts@data, by="id")
-#CTlabel = censustract label
-
-#merge shapefile data with ACS data
-f.nyc = data.frame(f.nyc@estimate)
-
-split=ldply(strsplit(rownames(f.nyc), ","))
-f.nyc$state = tolower(sub("^.*, ", "", rownames(f.nyc)))
-f.nyc$tract = tolower(gsub("Census Tract ", "", split[,1]))
-f.nyc$county = tolower(gsub("^[ ]","",split[,2]))
-f.nyc$county = gsub(" county", "", f.nyc$county)
-f.nyc$county = gsub("kings", "brooklyn", f.nyc$county)
-f.nyc$county = gsub("new york", "manhattan", f.nyc$county)
-f.nyc$county = gsub("richmond", "staten island", f.nyc$county)
-rownames(f.nyc) = NULL
-
-f.nyc$tract = as.numeric(f.nyc$tract)
-ny.df$CTLabel = as.numeric(as.character(ny.df$CTLabel))
-ny.df$BoroName = tolower(ny.df$BoroName)
-
-final = merge(x = ny.df, y = f.nyc, by.x = c("CTLabel", "BoroName"), by.y = c("tract", "county"), all.x=TRUE)
-names(final)[19:24] = c("white", "black", "indian", "asian", "hawaiian", "other")
-
-
-
-final$race = unlist(apply(final[,19:24], 1, function(x){
-  if(sum(is.na(x)) == length(19:24)) return("NA")
-  else return(names(which.max(x)))
-}))
-qplot(long, lat, data = final, group=group, order=order, geom="polygon", fill=race) + theme_bw() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank())
-@
-
+Although the Census Bureau's API has some drawbacks the available data is available at a very detailed level.  For the 5-year ACS datasets, the geographic regions available include county-level and smaller regions.  The full extent of the data is available by a census tract by census tract level of detail.  
 
 <<test, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 library(maptools)
@@ -622,9 +582,6 @@ ny.shape = readShapeSpatial("Z:/My Documents/shapes/tl_2013_36_tract.shp")
 ny.shape@data$id = rownames(ny.shape@data)
 ny.points = fortify(ny.shape)
 ny2.df = join(ny.points, ny.shape@data, by="id")
-#by county
-#subset(fips.county, State=='NY') #61, 5, 47, 81, 85
-qmap("brooklyn new york city", zoom=11) + geom_path(aes(x = long, y = lat, group=group, order=order), data = subset(ny2.df, COUNTYFP %in% c("061", "005", "047", "081", "085")))
 #use NAME or NAMELSAD
 
 #get data from ACS
