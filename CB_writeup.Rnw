@@ -444,7 +444,7 @@ In calculating proportions we must often add different estimates together for di
 
 \subsection{Variable Access}
 Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} there are limited combinations of variables available.  The following is one of the exercises in \citet{stangl:2013} to compare health insurance status by race:
-
+%%todo add example for income and hours worked.
 \begin{quote}
 Of the 1000 people in our dataset, 761 are white, 106 are black, 70 are asian and 63 are other races.  The sample proportions of people who have health insurance by racial group are $\hat{p}_{white} = 0.880$, $\hat{p}_{black} = 0.811$, $\hat{p}_{asian} = 0.843$, $\hat{p}_{other} = 0.730$.  Create the two-way table for counts of health insurance by race.
 \end{quote}
