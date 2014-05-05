@@ -569,7 +569,7 @@ As a guideline, the Census Bureau recommends comparing similar length datasets t
 \section{Examples from ACS}
 Although the Census Bureau's API has some drawbacks the available data is available at a very detailed level.  For the 5-year ACS datasets, the geographic regions available include county-level and smaller regions.  The full extent of the data is available by a census tract by census tract level of detail.  For areas with high population density, such as New York City, census tract level data allows block-by-block level of detail.\\
 \\
-In the following example we look at the majority race in New York City for each census tract.  The shape files for New York census tracts is available from \url{http://www.census.gov/cgi-bin/geo/shapefiles2013/main}; from this shape file we extract the coordinates for the five boroughs of New York City: New York County (Manhattan), Bronx County (Bronx), Kings County (Brooklyn), Queens County (Queens) and Richmond County (Staten Island).  We perform a GET request using the acs package (\citet{acs}) and we plot this on top of google maps using ggmaps (\citet{ggmaps}).  The following code plots majority race for each census tract in New York City:
+In the following example we look at the majority race in New York City for each census tract.  The shape files for New York census tracts is available from \url{http://www.census.gov/cgi-bin/geo/shapefiles2013/main}; from this shape file we extract the coordinates for the five boroughs of New York City: New York County (Manhattan), Bronx County (Bronx), Kings County (Brooklyn), Queens County (Queens) and Richmond County (Staten Island).  We perform a GET request using the acs package (\citet{acs}) and we plot this on top of google maps using ggmaps (\citet{ggmap}).  The following code plots majority race for each census tract in New York City:
 
 <<test, warning=FALSE, message=FALSE, cache=TRUE, tidy=FALSE>>=
 library(maptools)
@@ -636,8 +636,8 @@ qmap("brooklyn new york city", zoom=10) +
 @
 
 \section{Conclusion}
-Among the various tools to access data from the Census Bureau the online API is the most complicated and some features are not entirely well documented.  Although the online API is more difficult to use it allows more comprehensive access to the ACS and deccenial census datasets compared to the other web tools provided by the Census Bureau.  Who is the target audience for the online developer's API?  
-
+Among the various tools to access data from the Census Bureau the online API is the most complicated and some features are not entirely well documented.  Although the online API is more difficult to use it allows more comprehensive access to the ACS and deccenial census datasets compared to the other web tools provided by the Census Bureau.  Who is the target audience for the online developer's API?\\  
+\\
 Due to the technical knowledge required to access the online API, clearly the audience is not local business leaders or congressional staffers.  It is unlikely someone without significant programming knowledge would be able to understand the JSON and XML formats required to find datasets and variables.  Due to the structure of the data and the emphasis on frequency instead of proportions, the online API is also not designed for statisticians.  The form of the data limits the available variables for each data table and makes it difficult to subset on variables.  Right now the online API is only useful to application developers who cannot store the contents of the entire ACS datasets.  With some restructuring the API could be a useful tool for statisticians since it allows for a detailed look down to the census tract level and it allows access to data without downloading the entire dataset.
 
 \section{Appendix}
