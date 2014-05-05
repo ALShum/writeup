@@ -2,11 +2,11 @@
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{pdflscape}
 \usepackage[backend=bibtex, natbib=true]{biblatex}
 \addbibresource{references.bib}
 
 \newcommand{\hh}[1]{{\color{magenta} #1}} 
-
 \usepackage[margin=1in]{geometry}
 \setlength{\parindent}{0in}
 
@@ -26,9 +26,9 @@ The United States Census Bureau has been conducting a decennial census since 179
 \\
 The ACS is an ongoing yearly survey that collects additional demographic variables including but not limited to age, sex, race, income and education.  Unlike the decennial census, the American Community Survey is distributed based on a random selection of addresses every year.  Although the ACS is only sent to a sample of all US households, this data is meant to provide more up to date information than the Census Bureau's decennial census.  Completion of both the decennial census and the American Community Survey are required by law (Title 18 U.S.C Section 3571 and Section 3559); however, it should be noted that the Census Bureau has not opted to prosecute anyone for failure to complete the decennial census or the ACS.  Despite the lack of enforcement, the ACS still reports a response rate of 97\%.\\ %http://www.politifact.com/texas/statements/2014/jan/09/us-census-bureau/americans-must-answer-us-census-bureau-survey-law-/
 \\
-Both the decennial survey and the ACS data are used in part by federal, state and local agencies as basis for policy decisions and to allocate state funding.  The Census Bureau has also released some of this data for public use.  Many of the data sets are available directly in a compressed format from the Census Bureau's FTP site: \url{http://ftp2.census.gov/}.  Since 2012, the Census Bureau has also included an online developer's API in order to improve accessibility of the ACS and decennial census datasets.  The Census Bureau's online API can be accessed online: \url{http://api.census.gov}.\\
+Both the decennial survey and the ACS data are used in part by federal, state and local agencies as basis for policy decisions and to allocate state funding.  The Census Bureau has also released some of this data for public use.  Many of the data sets are available directly in a compressed format from the Census Bureau's FTP site: \url{http://ftp2.census.gov/}.  The Census Bureau has created numerous other tools to make it easier for the public to access their data.  These tools include Easy Stats (\url{http://www.census.gov/easystats/}), QuickFacts (\url{http://quickfacts.census.gov/qfd/index.html}) and DataFerrett (\url{http://dataferrett.census.gov/}).  Since 2012, the Census Bureau has also included an online developer's API in order to improve accessibility of the ACS and decennial census datasets.  The Census Bureau's online API can be accessed online: \url{http://api.census.gov}.\\
 \\
-We will discuss how the ACS data is structured when we request data and how to access data from the Census Bureau's online developer's API.  We will also discuss what kind of variables are available and some limitations with the API.  We will base this discussion on a paper by \citet{stangl:2013} as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access as well as inconsistencies in the database.
+We will discuss how to access data from the Census Bureau's online developer's API and how the ACS data is structured.  We will also discuss what kind of variables are available and some limitations with the API.  We will base this discussion on a paper by \citet{stangl:2013} as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access as well as inconsistencies in the database.
 
 \section{Requesting Data}
 To access data through the Census Bureau's online API we need to construct an  HTTP GET request.  A valid GET request is formed through a constructed web URL and includes a specific dataset, year, variable and geographic region of interest.  The basic structure of an HTTP GET request for the decennial census and for the ACS is as follows:
@@ -61,7 +61,7 @@ http://api.census.gov/data/2011/acs3?key=[KEY]&get=[VARIABLES]&for=[GEOGRAPHY]
 \end{verbatim}
 
 \subsection{Geography}
-$[$GEOGRAPHY$]$ describes the geographic region of interest, and the $\&for=[GEOGRAPHY]$ tag is used to indicate this region. The geographic area can include the entire United States:
+{\tt [GEOGRAPHY]} describes the geographic region of interest, and the {\tt \&for=[GEOGRAPHY]} tag is used to indicate this region. The geographic area can include the entire United States:
 \begin{verbatim}
 http://api.census.gov/data/[YEAR]/[DATASET]?key=[KEY]&get=[VARIABLES]&for=us:*
 \end{verbatim}
@@ -83,8 +83,7 @@ http://api.census.gov/data/ [...] &for=tract:101110&in=state:06+county:037
 \end{verbatim}
 The above HTTP GET requests all census tracts within Los Angeles County and census tract 1011.10 within Los Angeles County, respectively.\\
 \\
-The Census Bureau has a very sophisticated system of hierarchy for geographic entities.  At the top level of the ACS is the entire nation, followed by region, division, state, county, county-subdivision, tract, block group, place, congressional district, zip code area, school district and a few other geographic divisions.  See table \ref{tab:geolist} for a complete table of geographic entities available on the census API for the 2012 ACS. \hh{XXX I know that I've asked before, and I know that you had a reason - but I forgot: what does the number of the summary level tell us? Could you include that in the description (or leave it out - it's a bit confusing). Could you extend the table by including the valid `for' and any required `in' geographic regions? 
-I'm for example not quite sure how I would ask for a county subdivision - how o you deal with the white space? include a plus symbol?}\\
+The Census Bureau has a very sophisticated system of hierarchy for geographic entities.  At the top level of the ACS is the entire nation, followed by region, division, state, county, county-subdivision, tract, block group, place, congressional district, zip code area, school district and a few other geographic divisions.  See table \ref{tab:geolist} for a table of geographic entities available on the census API for the 2012 ACS along with an example of the correct {\tt [GEOGRAPHY} formatting for a valid GET request. The summary levels in table \ref{tab:geolist} are three-digit codes used internally by the Census Bureau to indicate different geographic regions or levels.  Note that different datasets will have different geographies and thus different summary levels available;  unfortunately there does not appear to be a master list of summary levels available to the public.\\
 
 <<geotable, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE>>=
 #http://api.census.gov/data/2012/acs5/geo.html
@@ -96,41 +95,46 @@ tabl = xtable(ta, label="tab:geolist")
 caption(tabl) = "List of valid geographic combinations"
 # print(tabl, include.rownames=FALSE)
 @
+\begin{landscape}
 \begin{table}[ht]
 \centering
-\begin{tabular}{ll}
+\begin{tabular}{lll}
   \hline
-Summary Level & Description \\ 
+Summary & Description & {\tt [GEOGRAPHY]}\\
+    Level   & & \\
   \hline
-  010 & us \\ 
-  020 & region \\ 
-  030 & division \\ 
-  040 & state \\ 
-  050 & state-county \\ 
-  060 & state-county-county subdivision \\ 
-  140 & state-county-tract \\ 
-  150 & state-county-tract-block group \\ 
-  160 & state-place \\ 
-  250 & american indian area/alaska native area/hawaiian home land \\ 
-  310 & metropolitan statistical area/micropolitan statistical area \\ 
-  320 & state-metropolitan statistical area/micropolitan statistical area \\ 
-  330 & combined statistical area \\ 
-  340 & state-combined statistical area \\ 
-  350 & new england city and town area \\ 
-  400 & urban area \\ 
-  500 & state-congressional district \\ 
-  510 & state-congressional district-county \\ 
-  610 & state-state legislative district (upper chamber) \\ 
-  620 & state-state legislative district (lower chamber) \\ 
-  795 & state-public use microdata area \\ 
-  950 & state-school district (elementary) \\ 
-  960 & state-school district (secondary) \\ 
-  970 & state-school district (unified) \\ 
+  010 & us & {\tt \&for=us:*}\\ 
+  020 & region & {\tt \&for=region:*}\\ 
+  030 & division & {\tt \&for=division:*}\\ 
+  040 & state & {\tt \&for=state:*}\\ 
+  050 & state-county & {\tt \&for=county:*}\\ 
+  060 & state-county-county subdivision & {\tt \&for=county+subdivision:*\&in=state:01+county:001}\\ 
+  140 & state-county-tract & {\tt \&for=tract:*\&in=state:01+county:001}\\ 
+  150 & state-county-tract-block group & {\tt \&for=block+group:*\&in=state:1+county:001+tract:020100}\\ 
+  160 & state-place & {\tt \&for=place:*\&in=state:01}\\ 
+  250 & american indian area/alaska native area & {\tt \&for=american+indian+area/alaska+native+area/hawaiian+home+land:*\&in=state:01}\\ 
+      & hawaiian home land & \\
+  310 & metropolitan/micropolitan statistical area & {\tt \&for=metropolitan+statistical+area/micropolitan+statistical+area:*}\\ 
+  320 & state-metropolitan/micropolitan statistical area & {\tt \&for=metropolitan+statistical+area/micropolitan+statistical+area:*\&in=state:01}\\ 
+  330 & combined statistical area & {\tt \&for=combined+statistical+area:*}\\ 
+  340 & state-combined statistical area & {\tt \&for=combined+statistical+area:*\&in=state:01}\\ 
+  350 & new england city and town area & {\tt \&for=new+england+city+and+town+area:*}\\ 
+  400 & urban area & {\tt \&for=urban+area:*}\\ 
+  500 & state-congressional district & {\tt \&for=congressional+district:*}\\ 
+  510 & state-congressional district-county & {\tt \&for=county:*\&in=state:01+congressional+district:01}\\ 
+  610 & state-state legislative district (upper chamber) & {\tt \&for=state+legislative+district+(upper+chamber):*\&in=state:01}\\ 
+  620 & state-state legislative district (lower chamber) & {\tt \&for=state+legislative+district+(lower+chamber):*\&in=state:01}\\ 
+  795 & state-public use microdata area & {\tt \&for=public+use+microdata+area:*\&in=state:01}\\ 
+  860 & zip code tabulation area & {\tt \&for=zip+code+tabulation+area:*} \\
+  950 & state-school district (elementary) & {\tt \&for=school+district+(elementary):*\&in=state:01}\\ 
+  960 & state-school district (secondary) & {\tt \&for=school+district+(secondary):*\&in=state:01}\\ 
+  970 & state-school district (unified) & {\tt \&for=school+district+(unified):*\&in=state:01}\\ 
    \hline
 \end{tabular}
 \caption{List of valid geographic regions for the 2012 ACS 5-year}
 \label{tab:geolist}
 \end{table}
+\end{landscape}
 
 From table \ref{tab:geolist}, there is a specific hierarchy of geographic regions and specific valid combinations of geographic regions.  Different ACS datasets  have different geographic regions available and different requirements for geographic regions.  For example, the 2010 decennial census requires that we specify a state for zip code tabulation areas.  By contrast, the 2012 ACS 5-year dataset has zip code tabulation areas that do not require a containing state for a valid GET request.  The 2010 ACS 5-year dataset simply does not have zip code tabulation areas available at all.  In order to understand which geographic regions are available for datasets and which combination of geographic regions are valid we will discuss the Census Bureaus documentation scheme for each of their datasets in the section \ref{sec:geo}.\\
 \\
@@ -338,8 +342,6 @@ Using the Census Bureau's online API for these exercises presents us with three 
 
 We will highlight each of these issues in this section following along some of Stangl et al's examples.
 
-\hh{XXX this section is still a bit hard to follow. But I think, it just needs a bit of additional structure. Could you add (verbatim) the actual question that Stangl et al are asking the students to investigate? That would help for a start. Then you could switch to a two column representation with the analyses side by side (not sure that it'll work, but it's worth a try).}
-
 \subsection{Structure of the Data}
 <<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
 library(xtable)
@@ -392,7 +394,6 @@ tab2 = xtable(head(final), label="fig:tidy", caption="Reshaped Health Insurance 
 digits(tab2) = rep(0,6)
 print(tab2, include.rownames=FALSE)
 @
-
 \subsection{Calculating Proportions}
 The Census Bureau has historically provided information in the form of counts and for a majority of available datasets data is presented as a nominal frequency instead of a proportion.  Nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  This dataset is reshaped into a tidy form.  In this dataset we have gender, age and enrollment status (public university, private university or not enrolled).  California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population.
 
@@ -554,7 +555,6 @@ The dataset from the online API for health insurance by age and race does not in
 #chance #8 available
 #chance #9 not available #10
 @
-
 \section{Other Issues}
 %\subsection{Comparing across years}
 %http://www.census.gov/acs/www/guidance_for_data_users/comparing_data/
@@ -564,13 +564,14 @@ It is possible to circumvent this overlapping data problem by combining the ACS 
 \\
 As a guideline, the Census Bureau recommends comparing similar length datasets that do not overlap.  For example, comparing 1-year estimates from different years or 3-year estimates for two periods that don't overlap.  Unfortunately, the only option for comparing data across years out of the available datasets from the online API is to compare 2011 and 2012 1-year estimates.
 
-%\subsection{Nonresponse}
-
+%\subsection{Nonresponse}, talk about "universe"
 
 \section{Examples from ACS}
-Although the Census Bureau's API has some drawbacks the available data is available at a very detailed level.  For the 5-year ACS datasets, the geographic regions available include county-level and smaller regions.  The full extent of the data is available by a census tract by census tract level of detail.  
+Although the Census Bureau's API has some drawbacks the available data is available at a very detailed level.  For the 5-year ACS datasets, the geographic regions available include county-level and smaller regions.  The full extent of the data is available by a census tract by census tract level of detail.  For areas with high population density, such as New York City, census tract level data allows block-by-block level of detail.\\
+\\
+In the following example we look at the majority race in New York City for each census tract.  The shape files for New York census tracts is available from \url{http://www.census.gov/cgi-bin/geo/shapefiles2013/main}; from this shape file we extract the coordinates for the five boroughs of New York City: New York County (Manhattan), Bronx County (Bronx), Kings County (Brooklyn), Queens County (Queens) and Richmond County (Staten Island).  We perform a GET request using the acs package (\citet{acs}) and we plot this on top of google maps using ggmaps (\citet{ggmaps}).  The following code plots majority race for each census tract in New York City:
 
-<<test, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
+<<test, warning=FALSE, message=FALSE, cache=TRUE, tidy=FALSE>>=
 library(maptools)
 library(ggplot2)
 library(plyr)
@@ -578,52 +579,66 @@ library(ggmap)
 library(acs)
 
 #get shape file for NY
-ny.shape = readShapeSpatial("Z:/My Documents/shapes/tl_2013_36_tract.shp")
+ny.shape = readShapeSpatial("tl_2013_36_tract.shp")
 ny.shape@data$id = rownames(ny.shape@data)
 ny.points = fortify(ny.shape)
-ny2.df = join(ny.points, ny.shape@data, by="id")
-#use NAME or NAMELSAD
+ny.df = join(ny.points, ny.shape@data, by="id")
+ny.df$NAME = as.numeric(as.character(ny.df$NAME))
+ny.df$COUNTYFP = as.numeric(as.character(ny.df$COUNTYFP))
+ny.df = subset(ny.df,  COUNTYFP %in% c(61, 5, 47, 81, 85))
+#NAME corresponds to census tracts
 
 #get data from ACS
-NYC = geo.make(state="NY", county=c("New York County", "Bronx County", "Kings County", "Queens County", "Richmond County"), tract="*")
-f.nyc = acs.fetch(endyear = 2012, span = 5, geography = NYC, table.name = c("In Combination With One Or More Other Races"), col.names="pretty")
-#merge shapefile data with ACS data
+NYC = geo.make(state="NY", county=c("New York County", 
+                                    "Bronx County", 
+                                    "Kings County", 
+                                    "Queens County", 
+                                    "Richmond County"), tract="*")
+f.nyc = acs.fetch(endyear = 2012, span = 5, 
+                  geography = NYC, 
+                  table.name = c("In Combination With One Or More Other Races"), 
+                  col.names="pretty")
+
+#cleanup ACS names and dataframe
+#note: kings county = brooklyn, 
+#new york county = manhattan 
+#richmond county = staten island
 f.nyc = data.frame(f.nyc@estimate)
 split=ldply(strsplit(rownames(f.nyc), ","))
 f.nyc$state = tolower(sub("^.*, ", "", rownames(f.nyc)))
 f.nyc$tract = tolower(gsub("Census Tract ", "", split[,1]))
 f.nyc$county = tolower(gsub("^[ ]","",split[,2]))
 f.nyc$county = gsub(" county", "", f.nyc$county)
-#f.nyc$county = gsub("kings", "brooklyn", f.nyc$county)
-#f.nyc$county = gsub("new york", "manhattan", f.nyc$county)
-#f.nyc$county = gsub("richmond", "staten island", f.nyc$county)
 rownames(f.nyc) = NULL
 f.nyc$tract = as.numeric(f.nyc$tract)
 
 #lookup county names based on COUNTYFP number
-ny2.df$NAME = as.numeric(as.character(ny2.df$NAME))
-ny2.df$COUNTYFP = as.numeric(as.character(ny2.df$COUNTYFP))
-ny3.df = merge(x = ny2.df, y = subset(fips.county, State == 'NY'), by.x = "COUNTYFP", by.y = "County.ANSI")
-ny3.df$County.Name = tolower(ny3.df$County.Name)
-ny3.df$County.Name = gsub(" county", "", ny3.df$County.Name)
+ny2.df = merge(x = ny.df, y = subset(fips.county, State == 'NY'), 
+               by.x = "COUNTYFP", by.y = "County.ANSI")
+ny2.df$County.Name = tolower(ny2.df$County.Name)
+ny2.df$County.Name = gsub(" county", "", ny2.df$County.Name)
 
 #merge shape files with ACS data by county name
-final = merge(x = ny3.df, y = f.nyc, by.x = c("NAME", "County.Name"), by.y = c("tract", "county"), all.x=TRUE)
+final = merge(x = ny2.df, y = f.nyc, 
+              by.x = c("NAME", "County.Name"), 
+              by.y = c("tract", "county"), all.x=TRUE)
 names(final)[24:29] = c("white", "black", "indian", "asian", "hawaiian", "other")
 final$race = unlist(apply(final[,24:29], 1, function(x){
   if(sum(is.na(x)) == length(24:29)) return("NA")
   else return(names(which.max(x)))
 }))
 
-qmap("brooklyn new york city", zoom=10) + geom_path(aes(x = long, y = lat, group=group, order=order), data = subset(final, COUNTYFP %in% c(61, 5, 47, 81, 85))) + geom_polygon(aes(x = long, y = lat, group = group, order = order, fill = race, alpha = 0.15), data = subset(final, COUNTYFP %in% c(61, 5, 47, 81, 85)))
+qmap("brooklyn new york city", zoom=10) + 
+  geom_path(aes(x = long, y = lat, group=group, order=order, width = 0.7),
+            data = final, alpha = 0.35) + 
+  geom_polygon(aes(x = long, y = lat, group = group, order = order, fill = race), 
+               data = final, alpha = 0.3)
 @
-\section{Conclusion}
-\hh{XXX the first part of this section should go into the intro. (Up to about `Each of these tools ... ') Add an additional sentence here instead that summarizes the `multitude of different data products' offered by the Census Bureau .. }
-The Census Bureau has created numerous tools to make it easier for the public to access their data.  These tools include Easy Stats (\url{http://www.census.gov/easystats/}), QuickFacts (\url{http://quickfacts.census.gov/qfd/index.html}), DataFerrett (\url{http://dataferrett.census.gov/}), FTP access to data tables and summary files (\url{http://www2.census.gov/}), the online developer's API (\url{api.census.gov}) and numerous other tools.  Each of these tools is targetted for a different audience: congressional staffers, emergency planners, business owners or others who need access to demographic data.  Who is the target audience for the online developer's API?\\
-\\
-Due to the technical knowledge required to access the online API, clearly the audience is not local business leaders or congressional staffers.  It is unlikely someone without significant programming knowledge would be able to understand the JSON and XML formats required to find datasets and variables.  Due to the structure of the data and the emphasis on frequency instead of proportions, the online API is also not designed for statisticians.  The form of the data limits the available variables for each data table and makes it difficult to subset on variables.  Right now the online API is only useful to application developers who cannot store the contents of the entire ACS datasets.  With some restructuring the API could be a useful tool for statisticians since it allows for a detailed look down to the census tract level and it allows access to data without downloading the entire dataset.
 
-\hh{XXX your shiny applet?}
+\section{Conclusion}
+Among the various tools to access data from the Census Bureau the online API is the most complicated and some features are not entirely well documented.  Although the online API is more difficult to use it allows more comprehensive access to the ACS and deccenial census datasets compared to the other web tools provided by the Census Bureau.  Who is the target audience for the online developer's API?  
+
+Due to the technical knowledge required to access the online API, clearly the audience is not local business leaders or congressional staffers.  It is unlikely someone without significant programming knowledge would be able to understand the JSON and XML formats required to find datasets and variables.  Due to the structure of the data and the emphasis on frequency instead of proportions, the online API is also not designed for statisticians.  The form of the data limits the available variables for each data table and makes it difficult to subset on variables.  Right now the online API is only useful to application developers who cannot store the contents of the entire ACS datasets.  With some restructuring the API could be a useful tool for statisticians since it allows for a detailed look down to the census tract level and it allows access to data without downloading the entire dataset.
 
 \section{Appendix}
 \subsection{Meta-information for datasets}
@@ -662,6 +677,5 @@ The American Community Survey (ACS) is a nationwide survey...
   concept="B27001. Health Insurance Coverage Status by Sex by Age"/>
 \end{verbatim}
 \printbibliography
-
 
 \end{document}
