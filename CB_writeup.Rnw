@@ -16,7 +16,7 @@
 \maketitle
 
 \begin{abstract}
-The American Community Survey is an ongoing survey by the US Census Bureau that provides yearly demographic data.  The Census Bureau has various tools for giving the public access to their data.  Recently the Census Bureau released an online API to give the public access to the Decennial census and the American Community Census.  We will discuss how to find available datasets and available demographic variables as well as some of the shortcomings of the online API.  The main shortcomings are related to how the data is organized and the limited number of variables accessible from the online API.  We will also provide examples on what is possible using the online API.
+The American Community Survey is an ongoing survey by the US Census Bureau that provides yearly demographic data.  The Census Bureau has various tools for giving the public access to their data.  Recently the Census Bureau released an online API to give the public access to the Decennial census and the American Community Census.  We discuss how to find available datasets and available demographic variables as well as some of the shortcomings of the online API.  The main shortcomings are related to how the data is organized and the limited number of variables accessible from the online API.  We also provide examples on what is possible using the online API.
 
 \hh{for all the tables: numbers should be aligned right.}
 \end{abstract}
@@ -28,7 +28,7 @@ The ACS is an ongoing yearly survey that collects additional demographic variabl
 \\
 Both the decennial survey and the ACS data are used in part by federal, state and local agencies as basis for policy decisions and to allocate state funding.  The Census Bureau has also released some of this data for public use.  Many of the data sets are available directly in a compressed format from the Census Bureau's FTP site: \url{http://ftp2.census.gov/}.  The Census Bureau has created numerous other tools to make it easier for the public to access their data.  These tools include Easy Stats (\url{http://www.census.gov/easystats/}), QuickFacts (\url{http://quickfacts.census.gov/qfd/index.html}) and DataFerrett (\url{http://dataferrett.census.gov/}).  Since 2012, the Census Bureau has also included an online developer's API in order to improve accessibility of the ACS and decennial census datasets.  The Census Bureau's online API can be accessed online: \url{http://api.census.gov}.\\
 \\
-We will discuss how to access data from the Census Bureau's online developer's API and how the ACS data is structured.  We will also discuss what kind of variables are available and some limitations with the API.  We will base this discussion on a paper by \citet{stangl:2013} as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access as well as inconsistencies in the database.
+We discuss how to access data from the Census Bureau's online developer's API and how the ACS data is structured.  We also discuss what kind of variables are available and some limitations with the API.  We base this discussion on a paper by \citet{stangl:2013} as a starting point on some of the limitations of the API.  This article explores some multivariate frequency distributions using data from the ACS dataset; however, there are some gaps in what we can access as well as inconsistencies in the database.
 
 \section{Requesting Data}
 To access data through the Census Bureau's online API we need to construct an  HTTP GET request.  A valid GET request is formed through a constructed web URL and includes a specific dataset, year, variable and geographic region of interest.  The basic structure of an HTTP GET request for the decennial census and for the ACS is as follows:
@@ -340,7 +340,7 @@ Using the Census Bureau's online API for these exercises presents us with three 
 \item some combination of variables are simply not available from the online API
 \end{enumerate}
 
-We will highlight each of these issues in this section following along some of Stangl et al's examples.
+We highlight each of these issues in this section following along some of Stangl et al's examples.
 
 \subsection{Structure of the Data}
 <<table, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results="asis", fig.cap='Subset of data used in Chance Article'>>=
@@ -395,6 +395,7 @@ digits(tab2) = rep(0,6)
 print(tab2, include.rownames=FALSE)
 @
 \subsection{Calculating Proportions}
+\label{sec:proportions}
 The Census Bureau has historically provided information in the form of counts and for a majority of available datasets data is presented as a nominal frequency instead of a proportion.  Nominal frequency of variables may not hold much meaning as different geographic entities contain different populations.  For example, in table \ref{tab:freq} we have university enrollment by age and gender for each state from the 2012 5-year ACS dataset.  This dataset is reshaped into a tidy form.  In this dataset we have gender, age and enrollment status (public university, private university or not enrolled).  California had over 700,000 male students at public universities while Colorado only had around 80,000 students in the same category.  These nominal enrollment numbers mean very little without knowing the size of the population.
 
 <<freq, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, results='asis'>>=
@@ -443,8 +444,64 @@ SE(A/B) = 1/B\sqrt{SE(A)^2 - \left(A/B\right)^2 SE(B)^2}
 In calculating proportions we must often add different estimates together for different labels.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.\\
 %https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
 
-\subsection{Variable Access}
-Due to how the data is provided by the Census Bureau compared with the subset of the public use microsample that is used in \citet{stangl:2013} there are limited combinations of variables available.  The following is one of the exercises in \citet{stangl:2013} to compare health insurance status by race:
+\subsection{Examples from Stangl and Data Access}
+We examine some of the exercises listed in \citet{stangl:2013} and later discuss the difficulty in extending these exercises further by subsetting the data further.  The first example requiring calculations is exercise 3 to generate a confidence intervals for health insurance data.
+
+\begin{quote}
+In our sample of 1000 people, 861 have health insurance and 139 do not.  Generate a confidence interval for the proportion of U.S. residents who do not have health insurance.
+\end{quote}
+
+First we calculate an estimate for the proportion of people who do not have health insurance using Stangl's dataset \citet{stangl:2013} and the corresponding 2012 5-year ACS numbers from the online API.
+
+<<example1stangl, cache=TRUE>>=
+acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
+p_no_insurance = sum(!acsdat$HealthInsurance)/length(acsdat$HealthInsurance)
+print(p_no_insurance)
+@
+<<example1stangl_hidden, echo=FALSE, cache=TRUE>>=
+CI_L = p_no_insurance - qnorm(0.975)*sqrt(p_no_insurance * (1 - p_no_insurance) / nrow(acsdat))
+CI_U = p_no_insurance + qnorm(0.975)*sqrt(p_no_insurance * (1 - p_no_insurance) / nrow(acsdat))
+@
+
+The same calculation can be done using the ACS data from the online API.  The data is not in a tidy form and require summing the correct columns together to get the desired result.  The following code prints out the first 10 column names and sums together the correct columns to find the total number of people without health insurance.
+<<example1acs_hidden, cache=TRUE, echo=FALSE>>=
+library(acs)
+#specify geography
+us = geo.make(us = "*")
+
+#get request
+health_acs = acs.fetch(endyear = 2012, span = 5, 
+                   geography = us, 
+                   table.number = "B27001", 
+                   col.names="pretty")
+@
+<<example1acs, cache=TRUE>>=
+#First ten column names for this table
+head(colnames(health_acs@estimate),10)
+
+#proportion with no insurance
+p_no_insurance_acs = sum(
+  health_acs@estimate[c(seq(5, 30, by=3), seq(33, 57, by=3))]
+  ) / health_acs@estimate[1]
+print(p_no_insurance_acs)
+@
+
+Next we calculate 95\% confidence intervals for proportion of people without health insurance using Stangl's dataset \citet{stangl:2013} and the corresponding ACS numbers from the online API.  From Stangl's dataset \citet{stangl:2013}, the confidence interval can be found using a formula familiar to introductory statistics students: $ \hat{p} \pm 1.96 \sqrt{\frac{\hat{p} (1 - \hat{p})}{n}}$.  From this formula, a 95\% confidence interval for the proportion of people in the United States without health insurance is: (\Sexpr{CI_L}, \Sexpr{CI_U}). \\ 
+<<example1acs_se, dependson="example1acs_hidden", cache=TRUE, echo=FALSE>>=
+A_B = p_no_insurance_acs
+B = health_acs@estimate[1]
+SE_A = sum(
+  health_acs@standard.error[c(seq(5, 30, by=3), seq(33, 57, by=3))]^2
+  )^0.5
+SE_B = health_acs@standard.error[1]
+SE_p = (1 / B) * sqrt(SE_A^2 - A_B^2 * SE_B^2)
+CI_L2 = A_B - qnorm(0.975)*SE_p
+CI_U2 = A_B + qnorm(0.975)*SE_p
+@
+
+The corresponding 95\% confidence interval for data from the online API is calculated from the available margin of error data for each table.  Standard errors can be calculated from the margin of error using the formulas for proportion and sum from section \ref{sec:proportions}.  A 95\% confidence interval using data from the online API for the proportion of people in the united states without health insurance is: (\Sexpr{CI_L2}, \Sexpr{CI_U2}).\\
+\\
+From the first example, the estimates of proportion of people without health insurance is similar in both Stangl's dataset and the ACS dataset from the online API.  The standard errors are significantly different simply due to the size of Stangl's dataset compared to the size of the ACS.  In the next example we follow along with another exercise but we also try to expand further by subsetting on more factors.  Due to how data is provided by the Census Bureau compared with the dataset used by \citet{stangl:2013} there are limited combinations of variables available.  The following is another exercises from \citet{stangl:2013} to compare health insurance status by race:
 %%todo add example for income and hours worked.
 \begin{quote}
 Of the 1000 people in our dataset, 761 are white, 106 are black, 70 are asian and 63 are other races.  The sample proportions of people who have health insurance by racial group are $\hat{p}_{white} = 0.880$, $\hat{p}_{black} = 0.811$, $\hat{p}_{asian} = 0.843$, $\hat{p}_{other} = 0.730$.  Create the two-way table for counts of health insurance by race.
