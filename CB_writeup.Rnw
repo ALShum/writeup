@@ -595,6 +595,53 @@ print(acsdat_gender_race)
 
 From the online API there are two related tables for health insurance coverage percentage: health insurance by race and age,and health insurance by gender and age.  Unfortunately it is not possible to combine information from these two tables without further information.  Our only option is to look for a table that includes all combinations of variables of interest.  This is a huge limitation for ACS data from the online API; we are limited in the combinations of variables available and must depend on a table having the exact variables of interest.\\
 \\
+The above limitation is demonstrated by modifying another exercise from \citet{stangl:2013}.  Exercise 7 from \citet{stangl:2013} is working with income and gender data and asks the follow:
+\begin{quote}
+Produce a plot showing the relationship between income and gender, comment on what you see, and summarize the relationship with appropriate summary statistics.  We can easily generate a histogram of income for each gender using the dataset in \citet{stangl:2013}:
+\end{quote}
+<<stangl3, warning=FALSE, message=FALSE, cache=TRUE, tidy = FALSE, fig.height=3, fig.width=5, fig.align='center'>>=
+library(ggplot2)
+acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
+qplot(Income, data=acsdat, facets=~Sex)
+@
+The 2012 5-year ACS dataset has many different tables involving different measures of income: aggregate income, household income, per-capita income and many more.  To recreate the above exercise, the ACS dataset from the online API has a table for median income in the past 12 months by gender and work hours for the population above 15 years old.  
+<<colnames>>=
+#test
+print("todo")
+@
+This data is displayed in table \ref{tab:medincome}.  This data set displays hours worked as full-time workers or other and note that these numbers are displayed in 2012 inflation-adjusted dollars. 
+<<example3-hidden, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE, results='asis'>>=
+library(acs)
+library(xtable)
+library(reshape2)
+library(plyr)
+states = geo.make(state = "*")
+median = acs.fetch(endyear = 2012, span = 5, geography = states, 
+                   table.number = "B19326", col.names="pretty")
+med = data.frame(median@estimate)
+names(med) = gsub("Median.Income.by.Sex.by.Work.Experience.for.the.Population.15..Years..Median.income.in.the.past.12.months..in.2012.inflation.adjusted.dollars.....", "", names(med))
+names(med) = c('total','male_total','male_full','male_other',
+                     'female_total','female_full','female_other')
+med$state = factor(rownames(med))
+rownames(med) = NULL
+med = med[,c(-1)]
+med.melt = subset(melt(med, id='state'))
+medcols = ldply(strsplit(as.character(med.melt$variable), "_"))
+medincome = data.frame(state = med.melt$state, gender = medcols$V1, 
+                       part.full = medcols$V2, income = med.melt$value)
+
+tabl = xtable(head(medincome,10), label="tab:medincome", caption="Median Income in the past 12 months by Gender and Hours")
+digits(tabl) = rep(0,5)
+print(tabl, include.rownames=FALSE)
+@
+From this data we can generate a similar histogram with one observation per state, this histogram is in figure \ref{fig:example3}.  However, if we modify this exercise so that we are 
+
+<<example3, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE>>=
+library(ggplot2)
+qplot(income, data=medincome, facets=~gender)
+@
+
+
 
 <<var, echo=FALSE>>=
 #example2: (chance #4)
