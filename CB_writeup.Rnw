@@ -445,14 +445,13 @@ In calculating proportions we must often add different estimates together for di
 %https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
 
 \subsection{Examples from Stangl and Data Access}
-We examine some of the exercises listed in \citet{stangl:2013} and later discuss the difficulty in extending these exercises further by subsetting the data further.  The first example requiring calculations is exercise 3 to generate a confidence intervals for health insurance data.
+We examine some of the exercises listed in \citet{stangl:2013} and later discuss the difficulty in extending these exercises by subsetting on additional factors.  The first example is exercise 3 from \citet{stangl:2013} and the exercise is to generate confidence intervals for health insurance data.
 
 \begin{quote}
 In our sample of 1000 people, 861 have health insurance and 139 do not.  Generate a confidence interval for the proportion of U.S. residents who do not have health insurance.
 \end{quote}
 
-First we calculate an estimate for the proportion of people who do not have health insurance using Stangl's dataset \citet{stangl:2013} and the corresponding 2012 5-year ACS numbers from the online API.
-
+First we calculate an estimate for the proportion of people who do not have health insurance using Stangl's dataset \citet{stangl:2013} and the corresponding 2012 5-year ACS numbers from the online API.  The 1000 observation subset used in \citet{stangl:2013} is in a tidy format and calculating insurance coverage can be done easily by summing rows.
 <<example1stangl, cache=TRUE>>=
 acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
 p_no_insurance = sum(!acsdat$HealthInsurance)/length(acsdat$HealthInsurance)
@@ -463,7 +462,7 @@ CI_L = p_no_insurance - qnorm(0.975)*sqrt(p_no_insurance * (1 - p_no_insurance) 
 CI_U = p_no_insurance + qnorm(0.975)*sqrt(p_no_insurance * (1 - p_no_insurance) / nrow(acsdat))
 @
 
-The same calculation can be done using the ACS data from the online API.  The data is not in a tidy form and require summing the correct columns together to get the desired result.  The following code prints out the first 10 column names and sums together the correct columns to find the total number of people without health insurance.
+The same calculation can be done using the ACS data from the online API but because the data is not in a tidy form it requires summing the columns together and more work from the user.  The following code prints out the first 10 column names from the health insurance coverage status by age and gender table from the 2012 5-year ACS and sums together the correct columns to find the total number of people without health insurance.  Because the column headers store information about gender, age group and insurance status we must manually select the correct columns to aggregate.
 <<example1acs_hidden, cache=TRUE, echo=FALSE>>=
 library(acs)
 #specify geography
@@ -486,7 +485,7 @@ p_no_insurance_acs = sum(
 print(p_no_insurance_acs)
 @
 
-Next we calculate 95\% confidence intervals for proportion of people without health insurance using Stangl's dataset \citet{stangl:2013} and the corresponding ACS numbers from the online API.  From Stangl's dataset \citet{stangl:2013}, the confidence interval can be found using a formula familiar to introductory statistics students: $ \hat{p} \pm 1.96 \sqrt{\frac{\hat{p} (1 - \hat{p})}{n}}$.  From this formula, a 95\% confidence interval for the proportion of people in the United States without health insurance is: (\Sexpr{CI_L}, \Sexpr{CI_U}). \\ 
+Next we calculate 95\% confidence intervals for proportion of people without health insurance using both the 1000 observation subset and the corresponding  2012 5-year ACS numbers from the online API.  For Stangl's exercise, the confidence interval can be found using a formula familiar to introductory statistics students: $ \hat{p} \pm 1.96 \sqrt{\frac{\hat{p} (1 - \hat{p})}{n}}$.  From this formula, a 95\% confidence interval for the proportion of people in the United States without health insurance is: (\Sexpr{CI_L}, \Sexpr{CI_U}). \\ 
 <<example1acs_se, dependson="example1acs_hidden", cache=TRUE, echo=FALSE>>=
 A_B = p_no_insurance_acs
 B = health_acs@estimate[1]
@@ -499,15 +498,16 @@ CI_L2 = A_B - qnorm(0.975)*SE_p
 CI_U2 = A_B + qnorm(0.975)*SE_p
 @
 
-The corresponding 95\% confidence interval for data from the online API is calculated from the available margin of error data for each table.  Standard errors can be calculated from the margin of error using the formulas for proportion and sum from section \ref{sec:proportions}.  A 95\% confidence interval using data from the online API for the proportion of people in the united states without health insurance is: (\Sexpr{CI_L2}, \Sexpr{CI_U2}).\\
+The corresponding 95\% confidence interval for data from the online API is calculated from the available margin of error data for each table.  Standard errors are calculated from the margin of error  and then the formulas from section \ref{sec:proportions} are used to find the standard error for proportions.  A 95\% confidence interval using data from the online API for the proportion of people in the united states without health insurance is: (\Sexpr{CI_L2}, \Sexpr{CI_U2}).\\
 \\
-From the first example, the estimates of proportion of people without health insurance is similar in both Stangl's dataset and the ACS dataset from the online API.  The standard errors are significantly different simply due to the size of Stangl's dataset compared to the size of the ACS.  In the next example we follow along with another exercise but we also try to expand further by subsetting on more factors.  Due to how data is provided by the Census Bureau compared with the dataset used by \citet{stangl:2013} there are limited combinations of variables available.  The following is another exercises from \citet{stangl:2013} to compare health insurance status by race:
+From this first example, the estimates of proportion of people without health insurance is similar in both Stangl's dataset and the ACS dataset from the online API.  The standard errors are significantly different simply due to the size of Stangl's dataset compared to the size of the ACS.  In the following example we try to expand further by subsetting on more factors.  The next exercise from \citet{stangl:2013} is to compare health insurance status by race:
+
 %%todo add example for income and hours worked.
 \begin{quote}
 Of the 1000 people in our dataset, 761 are white, 106 are black, 70 are asian and 63 are other races.  The sample proportions of people who have health insurance by racial group are $\hat{p}_{white} = 0.880$, $\hat{p}_{black} = 0.811$, $\hat{p}_{asian} = 0.843$, $\hat{p}_{other} = 0.730$.  Create the two-way table for counts of health insurance by race.
 \end{quote}
 
-Confirming the numbers in this exercise using the public use microsample is straight forward and requires a single line of code using the plyr \cite{plyr} package in R.  We can summarise percentage of people with health insurance by race as follows:
+Confirming the numbers in this exercise using the Stangl's 1000 observation subset is straight forward and requires a single line of code using the plyr \cite{plyr} package in R.  We can summarise percentage of people with health insurance by race as follows:
 <<stangl1, warning=FALSE, message=FALSE, cache=TRUE, tidy=FALSE>>=
 library(plyr)
 acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
@@ -517,7 +517,7 @@ acsdat_by_race = ddply(acsdat, .(Race), summarise,
                        insurance_pct = 100*sum(HealthInsurance)/length(Race))
 print(acsdat_by_race)
 @
-This same calculation can be done from data provided by the online API.  Recall that the data at the individual data is not available with the online API but it is still to calculate overall insurance rates using state or country level data.  An additional step is required because the online API separates race into eight separate tables.  Due to the structure of the data from the ACS package, without putting the data in tidy form, finding the percentage with health insurance requires summing columns and element-wise division between columns.  
+This same calculation can be done from the 2012 5-year ACS data provided by the online API.  The data from the online API for health insurance coverage by race is separated into eight tables: insurance coverage for each race is located in a different table and requires a separate GET request for each race.  The following code shows the first few columns of the insurance coverage by age table by race.  Similar to the previous example, the columns of the data set store information on age and insurance status and to calculate health insurance coverage by race requires summing together the correct columns and dividing by the correct overall total.  This operation must be repeated for multiple tables.
 <<acs1_hidden, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 #example1: (chance #3, #5)
 #age + sex + health insurance available.
@@ -572,7 +572,9 @@ b_pct = calc_pct(health_black)
 o_pct = calc_pct(health_other)
 w_pct = calc_pct(health_white)
 @
-The column headers of the health insurance by race dataset from the online API reveal one big issue: the available variables are strictly set and cannot be easily changed.  The original exercise was to calculate health insurance coverage percentage for each race and age group is not a variable of interest.  In the subset of the public use microsample in \citet{stangl:2013} there were additional variables but because this dataset is in a tidy format it is possible to easily subset the data by row.  The dataset from the online API has different levels of factors in each column, age and health insurance status, and requires an extra step to sum health insurance numbers over the different levels of the age variable.  For datasets with more variables than just age and health insurance coverage, the non-tidy structure of this data means that summaries of some of the variables will requiring summing over all levels of other variables.  For each of the different datasets for races we have summed up health insurance coverage numbers over the different age groups and found the overall health coverage percentage numbers:
+From the previous two examples, the format of ACS data from the online API is in a very rigid format making it difficult to subset on further variables and also difficult to sum over levels variables.  The previous exercise to calculate health insurance coverage percentage for each race; the data table from the online API does only provides a table for health insurance by race and age so this requires the user to sum numbers over age.  For datasets with more variables than just age and health insurance coverage, the non-tidy structure of this data means that summaries of some of the variables will requiring summing over all levels of other variables.  Summing over variables is a column-wise operation because of the non-tidy format and this requires the user to manually select the correct columns.  Similarly, finding proportions requires column-wise summing and dividing by the correct {\emph total} column.  By contrast, the 1000 sample dataset from \citet{stangl:2013} is in tidy form and summing over levels of variables and subsetting are row-wise operations.  \\
+\\
+We have summed up health insurance coverage numbers over the different age groups for each race and found the overall health coverage percentage numbers:
 <<acs11, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 #print
 sprintf("asian insurance_pct: %f", a_pct)
@@ -580,7 +582,7 @@ sprintf("black insurance_pct: %f", b_pct)
 sprintf("other insurance_pct: %f", o_pct)
 sprintf("white insurance_pct: %f", w_pct)
 @
-Since the available variables are strictly set, it is not possible to subset further.  From the dataset in \citet{stangl:2013}, it is possible to subset further: health insurance percentage by race and gender.  Again, this calculation requires one line of code using the plyr package in R:
+The rigid format of each table also makes it difficult to subset on additional variables.  What if the user is now interested in health insurance coverage percentage by race, gender and further variables?  From the dataset in \citet{stangl:2013}, it is possible to subset further: health insurance coverage percentage by race and gender.  This calculation is a row-wise operation and requires one line of code using the plyr package in R:
 <<stangl2, warning=FALSE, message=FALSE, cache=TRUE, tidy = FALSE>>=
 library(plyr)
 acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
@@ -590,8 +592,10 @@ acsdat_gender_race = ddply(acsdat, .(Race, Sex), summarise,
                            insurance_pct = 100*sum(HealthInsurance)/length(Race))
 print(acsdat_gender_race)
 @
-The dataset from the online API for health insurance by age and race does not include gender and because the available variables are strictly set for each table it is not possible to calculate health insurance coverage percentage by race and gender.  Our only option is to look at other tables and find one that includes all combinations of variables of interest.  There is another table available from the online API for health insurance: table number {\tt B27001}.  This table is health insurance coverage status by age and gender.  It is possible to use both of these tables on health insurance to calculate estimates of health insurance coverage by gender and race but constructing exact figures is not possible.\\
+
+From the online API there are two related tables for health insurance coverage percentage: health insurance by race and age,and health insurance by gender and age.  Unfortunately it is not possible to combine information from these two tables without further information.  Our only option is to look for a table that includes all combinations of variables of interest.  This is a huge limitation for ACS data from the online API; we are limited in the combinations of variables available and must depend on a table having the exact variables of interest.\\
 \\
+
 <<var, echo=FALSE>>=
 #example2: (chance #4)
 #age + sex + marriage available
@@ -624,7 +628,7 @@ As a guideline, the Census Bureau recommends comparing similar length datasets t
 %\subsection{Nonresponse}, talk about "universe"
 
 \section{Examples from ACS}
-Although the Census Bureau's API has some drawbacks the available data is available at a very detailed level.  For the 5-year ACS datasets, the geographic regions available include county-level and smaller regions.  The full extent of the data is available by a census tract by census tract level of detail.  For areas with high population density, such as New York City, census tract level data allows block-by-block level of detail.\\
+Although the Census Bureau's API has some drawbacks the available data is available at a very detailed level.  For the 5-year ACS datasets, the geographic regions available include county-level and smaller regions.  The full extent of the data is available by a census tract by census tract level of detail.  For areas with high population density, such as New York City, census tract level data allows for a block-by-block level of detail.\\
 \\
 In the following example we look at the majority race in New York City for each census tract.  The shape files for New York census tracts is available from \url{http://www.census.gov/cgi-bin/geo/shapefiles2013/main}; from this shape file we extract the coordinates for the five boroughs of New York City: New York County (Manhattan), Bronx County (Bronx), Kings County (Brooklyn), Queens County (Queens) and Richmond County (Staten Island).  We perform a GET request using the acs package (\citet{acs}) and we plot this on top of google maps using ggmaps (\citet{ggmap}).  The following code plots majority race for each census tract in New York City:
 
@@ -685,6 +689,7 @@ final$race = unlist(apply(final[,24:29], 1, function(x){
   else return(names(which.max(x)))
 }))
 
+#plot map
 qmap("brooklyn new york city", zoom=10) + 
   geom_path(aes(x = long, y = lat, group=group, order=order, width = 0.7),
             data = final, alpha = 0.35) + 
