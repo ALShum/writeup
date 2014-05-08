@@ -4,6 +4,11 @@
 \usepackage{amsfonts}
 \usepackage{pdflscape}
 \usepackage[backend=bibtex, natbib=true]{biblatex}
+\usepackage{listings}
+\lstset{breaklines=true} % break long lines
+<<setup, include=FALSE>>=
+render_listings()
+@
 \addbibresource{references.bib}
 
 \newcommand{\hh}[1]{{\color{magenta} #1}} 
@@ -518,6 +523,7 @@ acsdat_by_race = ddply(acsdat, .(Race), summarise,
 print(acsdat_by_race)
 @
 This same calculation can be done from the 2012 5-year ACS data provided by the online API.  The data from the online API for health insurance coverage by race is separated into eight tables: insurance coverage for each race is located in a different table and requires a separate GET request for each race.  The following code shows the first few columns of the insurance coverage by age table by race.  Similar to the previous example, the columns of the data set store information on age and insurance status and to calculate health insurance coverage by race requires summing together the correct columns and dividing by the correct overall total.  This operation must be repeated for multiple tables.
+
 <<acs1_hidden, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 #example1: (chance #3, #5)
 #age + sex + health insurance available.
@@ -528,7 +534,7 @@ library(acs)
 us = geo.make(us = "*")
 
 #get requests
-health_white = acs.fetch(endyear = 2012, span = 5, 
+health_white = acs.fetch(endyear  =2012, span = 5, 
                          geography = us, 
                          table.number = "C27001A", 
                          col.names="pretty")@estimate
@@ -577,10 +583,10 @@ From the previous two examples, the format of ACS data from the online API is in
 We have summed up health insurance coverage numbers over the different age groups for each race and found the overall health coverage percentage numbers:
 <<acs11, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
 #print
-sprintf("asian insurance_pct: %f", a_pct)
-sprintf("black insurance_pct: %f", b_pct)
-sprintf("other insurance_pct: %f", o_pct)
-sprintf("white insurance_pct: %f", w_pct)
+sprintf("asian insurance_pct: %g", a_pct)
+sprintf("black insurance_pct: %g", b_pct)
+sprintf("other insurance_pct: %g", o_pct)
+sprintf("white insurance_pct: %g", w_pct)
 @
 The rigid format of each table also makes it difficult to subset on additional variables.  What if the user is now interested in health insurance coverage percentage by race, gender and further variables?  From the dataset in \citet{stangl:2013}, it is possible to subset further: health insurance coverage percentage by race and gender.  This calculation is a row-wise operation and requires one line of code using the plyr package in R:
 <<stangl2, warning=FALSE, message=FALSE, cache=TRUE, tidy = FALSE>>=
@@ -599,18 +605,29 @@ The above limitation is demonstrated by modifying another exercise from \citet{s
 \begin{quote}
 Produce a plot showing the relationship between income and gender, comment on what you see, and summarize the relationship with appropriate summary statistics.  We can easily generate a histogram of income for each gender using the dataset in \citet{stangl:2013}:
 \end{quote}
-<<stangl3, warning=FALSE, message=FALSE, cache=TRUE, tidy = FALSE, fig.height=3, fig.width=5, fig.align='center'>>=
+<<stangl3, warning=FALSE, message=FALSE, cache=TRUE, tidy = FALSE, fig.height=3, fig.width=5, fig.align='center', fig.cap='Income by Gender'>>=
 library(ggplot2)
 acsdat = read.csv("datasetSTANGL2013.csv") #Stangl's dataset
 qplot(Income, data=acsdat, facets=~Sex)
 @
-The 2012 5-year ACS dataset has many different tables involving different measures of income: aggregate income, household income, per-capita income and many more.  To recreate the above exercise, the ACS dataset from the online API has a table for median income in the past 12 months by gender and work hours for the population above 15 years old.  
-<<colnames>>=
-#test
-print("todo")
+The 2012 5-year ACS dataset has many different tables involving different measures of income: aggregate income, household income, per-capita income and many more.  To recreate the above exercise, the ACS dataset from the online API has a table for median income in the past 12 months by gender and work hours for the population above 15 years old. This data is displayed in table \ref{tab:medincome}.  This data set displays hours worked as full-time workers or other and note that these numbers are displayed in 2012 inflation-adjusted dollars.  
+<<colnames, warning=FALSE, message=FALSE, cache=TRUE, results='asis', echo=FALSE>>=
+library(acs)
+library(xtable)
+library(reshape2)
+library(plyr)
+states = geo.make(state = "*")
+median = acs.fetch(endyear = 2012, span = 5, geography = states, 
+                   table.number = "B19326", col.names="pretty")
+med = data.frame(median@estimate)
+names(med) = gsub("Median.Income.by.Sex.by.Work.Experience.for.the.Population.15..Years..Median.income.in.the.past.12.months..in.2012.inflation.adjusted.dollars.....", "", names(med))
+names(med) = c('total','male_total','male_full','male_other',
+                     'female_total','female_full','female_other')
+tabl = xtable(head(med,10), label="tab:medincome", caption="Median Income in the past 12 months by Gender and Hours")
+digits(tabl) = rep(0,8)
+print(tabl, include.rownames=FALSE)
 @
-This data is displayed in table \ref{tab:medincome}.  This data set displays hours worked as full-time workers or other and note that these numbers are displayed in 2012 inflation-adjusted dollars. 
-<<example3-hidden, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE, results='asis'>>=
+<<example3-hidden, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE, results='hide'>>=
 library(acs)
 library(xtable)
 library(reshape2)
@@ -630,20 +647,18 @@ medcols = ldply(strsplit(as.character(med.melt$variable), "_"))
 medincome = data.frame(state = med.melt$state, gender = medcols$V1, 
                        part.full = medcols$V2, income = med.melt$value)
 
-tabl = xtable(head(medincome,10), label="tab:medincome", caption="Median Income in the past 12 months by Gender and Hours")
+tabl = xtable(head(medincome,10), label="tab:medincome_reshape", caption="Median Income in the past 12 months by Gender and Hours")
 digits(tabl) = rep(0,5)
 print(tabl, include.rownames=FALSE)
 @
-From this data we can generate a similar histogram with one observation per state, this histogram is in figure \ref{fig:example3}.  However, if we modify this exercise so that we are 
+From this data we can generate a similar histogram with one observation per state, this histogram is in figure \ref{fig:example3}.  However, from the original data table, it is not possible to calculate the exact median income for full-time works averaged over both genders.
 
-<<example3, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE>>=
+<<example3, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE,  fig.height=3, fig.width=5, fig.align="center", fig.cap='Median Income by Gender'>>=
 library(ggplot2)
 qplot(income, data=medincome, facets=~gender)
 @
 
-
-
-<<var, echo=FALSE>>=
+<<var, echo=FALSE, eval="false">>=
 #example2: (chance #4)
 #age + sex + marriage available
 #race + sex + marriage available
