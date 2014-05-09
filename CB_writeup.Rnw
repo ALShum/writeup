@@ -446,7 +446,9 @@ A more difficult problem lies in finding standard errors for confidence interval
 \begin{align*}
 SE(A/B) = 1/B\sqrt{SE(A)^2 - \left(A/B\right)^2 SE(B)^2}
 \end{align*}
-In calculating proportions we must often add different estimates together for different labels.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.\\
+In the above formula, the proportion $A/B$ is a ratio where the numerator is a subset of the denominator and both A and B are estimates from the ACS dataset.  For example, if $A/B$ is the proportion of people with health insurance, then A would be the total number of people with health insurance and B would be the overall total number of people \\
+\\
+In calculating proportions we must often add different estimates together for different labels.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.  Note that previous two formulas for standard errors are approximations and do not consider any covariances.  In fact the standard error for a sum of estimates might be increasingly biased when summing a large number of estimates and will be not match estimates calculated using other methods.\\
 %https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
 
 \subsection{Examples from Stangl and Data Access}
@@ -651,7 +653,7 @@ tabl = xtable(head(medincome,10), label="tab:medincome_reshape", caption="Median
 digits(tabl) = rep(0,5)
 print(tabl, include.rownames=FALSE)
 @
-From this data we can generate a similar histogram with one observation per state, this histogram is in figure \ref{fig:example3}.  However, from the original data table, it is not possible to calculate the exact median income for full-time works averaged over both genders.
+From this data we can generate a similar histogram with one observation per state, this histogram is in figure \ref{fig:example3}.  However, the original data seen in table \ref{tab:medincome} makes it clear that it is not possible to calculate the exact median income for full-time works averaged over both genders.  In the previous example the main limitation was not being able to subset on additional variables, in this example the main limitation is not being able to average over the available variables.
 
 <<example3, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE,  fig.height=3, fig.width=5, fig.align="center", fig.cap='Median Income by Gender'>>=
 library(ggplot2)
@@ -760,9 +762,11 @@ qmap("brooklyn new york city", zoom=10) +
 @
 
 \section{Conclusion}
-Among the various tools to access data from the Census Bureau the online API is the most complicated and some features are not entirely well documented.  Although the online API is more difficult to use it allows more comprehensive access to the ACS and deccenial census datasets compared to the other web tools provided by the Census Bureau.  Who is the target audience for the online developer's API?\\  
+Among the various tools to access data from the Census Bureau the online API is the most complicated and some features are not entirely well documented.  Although the online API is more difficult to use it allows more comprehensive access to the ACS and decennial census datasets compared to the other web tools provided by the Census Bureau.  Who is the target audience for the online developer's API?\\  
 \\
-Due to the technical knowledge required to access the online API, clearly the audience is not local business leaders or congressional staffers.  It is unlikely someone without significant programming knowledge would be able to understand the JSON and XML formats required to find datasets and variables.  Due to the structure of the data and the emphasis on frequency instead of proportions, the online API is also not designed for statisticians.  The form of the data limits the available variables for each data table and makes it difficult to subset on variables.  Right now the online API is only useful to application developers who cannot store the contents of the entire ACS datasets.  With some restructuring the API could be a useful tool for statisticians since it allows for a detailed look down to the census tract level and it allows access to data without downloading the entire dataset.
+Due to the technical knowledge required to access the online API, clearly the audience is not local business leaders or congressional staffers.  It is unlikely someone without significant programming knowledge would be able to understand the JSON and XML formats required to find datasets and variables.  Due to the structure of the data and the emphasis on frequency instead of proportions, the online API is also not designed for statisticians.  The form of the data limits the available variables for each table and makes it difficult to subset on variables.  Right now the online API is useful only to application developers who cannot store the contents of the entire ACS datasets.  
+\\
+We occasionally used the acs package (\citet{acs}) in R instead of working directly with the JSON output.  However, the acs package still requires a lot of data processing: both in reshaping the data to tidy form and in dealing with the default column names from the raw dataset.  The online API makes available a lot of census data but it requires the user to do additional processing to be useful for any statistical analysis.  With some restructuring the API could be a useful tool for statisticians since it allows for a detailed look down to the census tract level and it allows access to data without downloading the entire dataset.\\
 
 \section{Appendix}
 \subsection{Meta-information for datasets}
