@@ -229,8 +229,8 @@ qplot(long, lat, data=iowa.sd.geo, group=group, order=order, geom="path") + them
 qplot(long, lat, data=subset(map_data('county'), region=="iowa"), group=group, order=order, geom="path") + theme_bw() + coord_map() + theme(axis.ticks = element_blank(), axis.text.x = element_blank(), axis.title.x=element_blank(), axis.text.y = element_blank(), axis.title.y=element_blank(), panel.grid = element_blank(), panel.border = element_blank(), legend.position = "none") + ggtitle("Iowa Counties")
 @
 
-For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset or the XML or JSON geography files.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}, the XML file is located at \url{http://api.census.gov/data/2012/acs5/geography.xml} and the JSON file is located at \url{http://api.census.gov/data/2012/acs5/geography.json}.  The above maps are available in shapefile format from the Census Bureau website located at \url{http://www.census.gov/cgi-bin/geo/shapefiles2013/main}.
-
+For a more detailed look at which geographies need to be specified, refer to the census bureau list of summary levels for each dataset or the XML or JSON geography files.  For the 2012 ACS dataset this is located at \url{http://api.census.gov/data/2012/acs5/geo.html}, the XML file is located at \url{http://api.census.gov/data/2012/acs5/geography.xml} and the JSON file is located at \url{http://api.census.gov/data/2012/acs5/geography.json}.  The above maps are available in shapefile format from the Census Bureau website located at \url{http://www.census.gov/cgi-bin/geo/shapefiles2013/main}.\\
+\\
 The map for Iowa's school districts can - after downloading the corresponding shapefile, e.g.~be created using the following code, which is based on R packages ggplot2 \cite{ggplot2}, maps \cite{maps}, and maptools \cite{maptools}:
 <<sd, eval=FALSE, tidy=FALSE>>=
 library(maps)
@@ -336,7 +336,7 @@ print(xtable(head(df), label="margin:df", caption="Margin of error for health in
 Based on tables \ref{tab:df} and \ref{margin:df}, $45052 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
 
 \section{Limitations of the API}
-The paper by \citet{stangl:2013} discusses the use of the American Community Survey as a dataset for classroom exercises (at the undergraduate level) with an emphasis on how data collected from these surveys is used to make important policy decisions.  The paper contains a number of classroom exercises that ask the reader to calculate  basic proportions about various demographic data such as health insurance coverage, marriage status and income.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample which constitutes a 0.005\% subsample of the 2010 ACS, or about a 0.0003\% representation of the US population. It would be advantageous by far to get corresponding answers based on the whole of the 2010 ACS. \hh{XXX I will try to find an educational reference that realistic examples in the classroom are better for the learning outcome.}  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
+The paper by \citet{stangl:2013} discusses the use of the American Community Survey as a dataset for classroom exercises (at the undergraduate level) with an emphasis on how data collected from these surveys is used to make important policy decisions.  The paper contains a number of classroom exercises that ask the reader to calculate  basic proportions about various demographic data such as health insurance coverage, marriage status and income.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample which constitutes a 0.005\% subsample of the 2010 ACS, or about a 0.0003\% representation of the US population. It would be advantageous by far to get corresponding answers based on the whole of the ACS 5-year dataset. \hh{XXX I will try to find an educational reference that realistic examples in the classroom are better for the learning outcome.}  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
 \\
 Using the Census Bureau's online API for these exercises presents us with three main problems:
 \begin{enumerate}
@@ -448,11 +448,11 @@ SE(A/B) = 1/B\sqrt{SE(A)^2 - \left(A/B\right)^2 SE(B)^2}
 \end{align*}
 In the above formula, the proportion $A/B$ is a ratio where the numerator is a subset of the denominator and both A and B are estimates from the ACS dataset.  For example, if $A/B$ is the proportion of people with health insurance, then A would be the total number of people with health insurance and B would be the overall total number of people \\
 \\
-In calculating proportions we must often add different estimates together for different labels.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.  Note that previous two formulas for standard errors are approximations and do not consider any covariances.  In fact the standard error for a sum of estimates might be increasingly biased when summing a large number of estimates and will be not match estimates calculated using other methods.\\
+In calculating proportions we must often add different estimates together for different labels.  Combining the standard error for a sum of estimates: $SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}$.  Note that previous two formulas for standard errors are approximations and do not consider any covariances.  In fact the standard error for a sum of estimates might be increasingly biased when summing a large number of estimates and will not match standard errors calculated using other methods.\\
 %https://www.census.gov/acs/www/Downloads/data_documentation/Statistical_Testing/2012StatisticalTesting3and5.pdf
 
 \subsection{Examples from Stangl and Data Access}
-We examine some of the exercises listed in \citet{stangl:2013} and later discuss the difficulty in extending these exercises by subsetting on additional factors.  The first example is exercise 3 from \citet{stangl:2013} and the exercise is to generate confidence intervals for health insurance data.
+We examine some of the exercises listed in \citet{stangl:2013} and later discuss the difficulty in extending these exercises by subsetting on additional factors.  The first example is exercise 3 from \citet{stangl:2013} and the exercise is to generate confidence intervals for health insurance data.  The exercise is listed below:
 
 \begin{quote}
 In our sample of 1000 people, 861 have health insurance and 139 do not.  Generate a confidence interval for the proportion of U.S. residents who do not have health insurance.
@@ -469,7 +469,7 @@ CI_L = p_no_insurance - qnorm(0.975)*sqrt(p_no_insurance * (1 - p_no_insurance) 
 CI_U = p_no_insurance + qnorm(0.975)*sqrt(p_no_insurance * (1 - p_no_insurance) / nrow(acsdat))
 @
 
-The same calculation can be done using the ACS data from the online API but because the data is not in a tidy form it requires summing the columns together and more work from the user.  The following code prints out the first 10 column names from the health insurance coverage status by age and gender table from the 2012 5-year ACS and sums together the correct columns to find the total number of people without health insurance.  Because the column headers store information about gender, age group and insurance status we must manually select the correct columns to aggregate.
+The same calculation can be done using the ACS data from the online API but because the data is not in a tidy form it requires summing the columns together and more work from the user.  The following code prints out the first 10 column names from the health insurance coverage status by age and gender table from the 2012 5-year ACS.  Finding health care coverage percentage requires summing together the correct columns to find the total number of people without health insurance.  Because the column headers store information about gender, age group and insurance status we must manually select the correct columns to aggregate.
 <<example1acs_hidden, cache=TRUE, echo=FALSE>>=
 library(acs)
 #specify geography
@@ -492,7 +492,7 @@ p_no_insurance_acs = sum(
 print(p_no_insurance_acs)
 @
 
-Next we calculate 95\% confidence intervals for proportion of people without health insurance using both the 1000 observation subset and the corresponding  2012 5-year ACS numbers from the online API.  For Stangl's exercise, the confidence interval can be found using a formula familiar to introductory statistics students: $ \hat{p} \pm 1.96 \sqrt{\frac{\hat{p} (1 - \hat{p})}{n}}$.  From this formula, a 95\% confidence interval for the proportion of people in the United States without health insurance is: (\Sexpr{CI_L}, \Sexpr{CI_U}). \\ 
+Next we calculate 95\% confidence intervals for proportion of people without health insurance using both the 1000 observation subset and the corresponding 2012 5-year ACS numbers from the online API.  For Stangl's exercise, the confidence interval can be found using a formula familiar to introductory statistics students: $ \hat{p} \pm 1.96 \sqrt{\frac{\hat{p} (1 - \hat{p})}{n}}$.  From this formula, a 95\% confidence interval for the proportion of people in the United States without health insurance is: (\Sexpr{CI_L}, \Sexpr{CI_U}). \\ 
 <<example1acs_se, dependson="example1acs_hidden", cache=TRUE, echo=FALSE>>=
 A_B = p_no_insurance_acs
 B = health_acs@estimate[1]
@@ -580,7 +580,7 @@ b_pct = calc_pct(health_black)
 o_pct = calc_pct(health_other)
 w_pct = calc_pct(health_white)
 @
-From the previous two examples, the format of ACS data from the online API is in a very rigid format making it difficult to subset on further variables and also difficult to sum over levels variables.  The previous exercise to calculate health insurance coverage percentage for each race; the data table from the online API does only provides a table for health insurance by race and age so this requires the user to sum numbers over age.  For datasets with more variables than just age and health insurance coverage, the non-tidy structure of this data means that summaries of some of the variables will requiring summing over all levels of other variables.  Summing over variables is a column-wise operation because of the non-tidy format and this requires the user to manually select the correct columns.  Similarly, finding proportions requires column-wise summing and dividing by the correct {\emph total} column.  By contrast, the 1000 sample dataset from \citet{stangl:2013} is in tidy form and summing over levels of variables and subsetting are row-wise operations.  \\
+From the previous two examples, the format of ACS data from the online API is in a very rigid format making it difficult to subset on variables and difficult to sum over all levels variables.  In the previous exercise to calculate health insurance coverage percentage for each race, the data from the online API only provides a table for health insurance by race and age so this requires the user to aggregate estimates over age.  For datasets with more variables than just age and health insurance coverage, the non-tidy structure of this data means that summaries of some of the variables will requiring summing over all levels of other variables.  Summing over variables is a column-wise operation because of the non-tidy format and this requires the user to manually select the correct columns.  Similarly, finding proportions requires column-wise summing and dividing by the correct {\emph total} column.  By contrast, the 1000 sample dataset from \citet{stangl:2013} is in tidy form and summing over levels of variables and subsetting are row-wise operations.  \\
 \\
 We have summed up health insurance coverage numbers over the different age groups for each race and found the overall health coverage percentage numbers:
 <<acs11, echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE>>=
@@ -653,7 +653,7 @@ tabl = xtable(head(medincome,10), label="tab:medincome_reshape", caption="Median
 digits(tabl) = rep(0,5)
 print(tabl, include.rownames=FALSE)
 @
-From this data we can generate a similar histogram with one observation per state, this histogram is in figure \ref{fig:example3}.  However, the original data seen in table \ref{tab:medincome} makes it clear that it is not possible to calculate the exact median income for full-time works averaged over both genders.  In the previous example the main limitation was not being able to subset on additional variables, in this example the main limitation is not being able to average over the available variables.
+From this data we can generate a similar histogram with one observation per state, this histogram is in figure \ref{fig:example3}.  However, if instead we are interested in median income for full-term works average over both genders, this data table would not be entirely useful.  From table \ref{tab:medincome}, it is clear that it is not possible to calculate the exact median income for full-time works averaged over both genders without more information.  In the previous example the main limitation was not being able to subset on additional variables, in this example the main limitation is not being able to average over the available variables.
 
 <<example3, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE,  fig.height=3, fig.width=5, fig.align="center", fig.cap='Median Income by Gender'>>=
 library(ggplot2)
