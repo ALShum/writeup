@@ -22,8 +22,6 @@ render_listings()
 
 \begin{abstract}
 The American Community Survey is an ongoing survey by the US Census Bureau that provides yearly demographic data.  The Census Bureau has various tools for giving the public access to their data.  Recently the Census Bureau released an online API to give the public access to the Decennial census and the American Community Census.  We discuss how to find available datasets and available demographic variables as well as some of the shortcomings of the online API.  The main shortcomings are related to how the data is organized and the limited number of variables accessible from the online API.  We also provide examples on what is possible using the online API.
-
-\hh{for all the tables: numbers should be aligned right.}
 \end{abstract}
 
 \section{Introduction}
@@ -336,7 +334,7 @@ print(xtable(head(df), label="margin:df", caption="Margin of error for health in
 Based on tables \ref{tab:df} and \ref{margin:df}, $45052 \pm 356$ is a 90$\%$ confidence interval for the number of women in Alameda County 75 and over with health insurance.
 
 \section{Limitations of the API}
-The paper by \citet{stangl:2013} discusses the use of the American Community Survey as a dataset for classroom exercises (at the undergraduate level) with an emphasis on how data collected from these surveys is used to make important policy decisions.  The paper contains a number of classroom exercises that ask the reader to calculate  basic proportions about various demographic data such as health insurance coverage, marriage status and income.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample which constitutes a 0.005\% subsample of the 2010 ACS, or about a 0.0003\% representation of the US population. It would be advantageous by far to get corresponding answers based on the whole of the ACS 5-year dataset. \hh{XXX I will try to find an educational reference that realistic examples in the classroom are better for the learning outcome.}  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
+The paper by \citet{stangl:2013} discusses the use of the American Community Survey as a dataset for classroom exercises (at the undergraduate level) with an emphasis on how data collected from these surveys is used to make important policy decisions.  The paper contains a number of classroom exercises that ask the reader to calculate basic proportions about various demographic data such as health insurance coverage, marriage status and income.  One of the main goals of these exercises to to engage students with a real example and according to \citet{edu1} using a real dataset is a good way for students to think about data and statistical issues.  The particular dataset used by \citet{stangl:2013} is a 1000 observation random subset of the 2010 ACS public use microdata sample which constitutes a 0.005\% subsample of the 2010 ACS, or about a 0.0003\% representation of the US population. It would be advantageous by far to get corresponding answers based on the whole of the ACS 5-year dataset.  We will attempt to use the Census Bureau online API to examine the same demographic variables.\\
 \\
 Using the Census Bureau's online API for these exercises presents us with three main problems:
 \begin{enumerate}
