@@ -625,7 +625,7 @@ names(med) = c('total','male_total','male_full','male_other',
                      'female_total','female_full','female_other')
 tabl = xtable(head(med,10), label="tab:medincome", caption="Median Income in the past 12 months by Gender and Hours")
 digits(tabl) = rep(0,8)
-print(tabl, include.rownames=FALSE)
+print(tabl, include.rownames)
 @
 <<example3-hidden, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE, results='hide'>>=
 library(acs)
