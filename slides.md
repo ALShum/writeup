@@ -95,14 +95,9 @@ Variables
 ========================================================
 - http://api.census.gov/data/2012/acs5/variables.json
 - Available variables posted in JSON format.
-$$
-\begin{verbatim}
-"B27001_056E": {
-  "label": "Female:!!75 years and over:!!With health insurance coverage",
-  "concept": "B27001. Health Insurance Coverage Status by Sex by Age"
-}
-\end{verbatim}
-$$
+
+![var](var.png)
+
 - A concept is a combination of factors from different questions on the ACS.
 - A label is a combination of different levels of factors.
 - A universe is the total number of people involved with a concept.
@@ -174,7 +169,8 @@ Formatting
 - Each row is a location based on specified geography.
 - Data not in tidy format.  Each row should be an observation and each column a variable.
 - Column headers provide categorical information. <br />
-(See: http://vita.had.co.nz/papers/tidy-data.pdf)
+<font size="4"> (See: Hadley Wickham. "Tidy Data". In: Under review by the Journal of Statistical Software (2014). url:
+http://vita.had.co.nz/papers/tidy-data.pdf.)  </font>
 
 Formatting
 ========================================================
@@ -189,11 +185,11 @@ Formatting
 6   Colorado   male     total  36651
 ```
 
+<font size="4"> http://api.census.gov/data/2012/acs5?key=[KEY]&get=B19326_001E,B19326_002E,B19326_003E,B19326_004E,B19326_005E,B19326_006E,B19326_007E,NAME&for=state:* </font>
 
 Taking a chance in the Classroom
 ========================================================
 - Article by Morgan, Cetinkaya-Rundel, Stangl with classroom exercises based on ACS data.
-- They use a much smaller sample of the ACS and their data is formatted much differently.
 
 ```
   Sex Age Married Income HoursWk  Race
@@ -205,7 +201,26 @@ Taking a chance in the Classroom
 6   1  14       0     NA      NA white
 ```
 
-- We explore some of their exercises using the full ACS dataset.
+- We explore some of their exercises using the full ACS dataset. <br/>
+<font size = "4"> (See: Dalene Stangl, Mine Cetinkaya Rundel, and Kari Lock Morgan. "Taking a Chance in the Classroom:
+The American Community Survey". In: CHANCE 26.1 (2013), pp. 42-46. doi: 10.1080/09332480.
+2013.772392. url: http://www.tandfonline.com/doi/abs/10.1080/09332480.2013.772392.) </font>
+
+Taking a chance in the Classroom
+========================================================
+
+```
+  Sex Age Married Income HoursWk  Race
+1   0  31       0  60.00      40 white
+2   1  31       0   0.36      12 black
+3   1  75       0   0.00      NA white
+4   0  80       0   0.00      NA white
+5   1  64       1   0.00      NA white
+6   1  14       0     NA      NA white
+```
+
+- This dataset is a 1000 person subset of the 2010 public use microsample.
+- Each row is an individual, columns are demographic variables unlike from online API.
 
 Taking a chance in the Classroom
 ========================================================
@@ -305,14 +320,27 @@ $$
 
 Standard Errors
 ========================================================
-- We can calculate the confidence interval for the proportion of U.S. residents who do not have health insurance.
+- We can calculate the confidence interval for the proportion of U.S. residents who do not have health insurance from full ACS 5-year dataset.
 - This is done by combining the two formulas on the previous page:
 
 ```
 [1] 0.1483 0.1492
 ```
 
-- This CI is a much smaller interval and does not take into account covariances.
+
+Compare with confidence interval from 1000 person subset:<br/>
+
+```
+[1] 0.1176 0.1604
+```
+
+
+
+Standard Errors
+========================================================
+- This CI is a much smaller interval in part due to the increase in sample size.
+- CI from full ACS 5-year does not take into account covariances.
+- Data is given as estimates not proportions; not much we can do about standard errors.
 
 Other issues
 ========================================================
@@ -328,8 +356,15 @@ Examples
 
 Examples
 ========================================================
-![plot of chunk unnamed-chunk-12](slides-figure/unnamed-chunk-12.png) 
+![plot of chunk unnamed-chunk-14](slides-figure/unnamed-chunk-14.png) 
 
+
+Conclusion
+========================================================
+- Data from online API in difficult to use format.
+- Possible to recreate some of the exercises from "Taking a chance in the Classroom".
+- Data from online API not great for hypothesis tests or confidence intervals.
+- Online API more useful for application developers.
 
 Questions
 ========================================================

@@ -95,14 +95,9 @@ Variables
 ========================================================
 - http://api.census.gov/data/2012/acs5/variables.json
 - Available variables posted in JSON format.
-$$
-\begin{verbatim}
-"B27001_056E": {
-  "label": "Female:!!75 years and over:!!With health insurance coverage",
-  "concept": "B27001. Health Insurance Coverage Status by Sex by Age"
-}
-\end{verbatim}
-$$
+
+![var](var.png)
+
 - A concept is a combination of factors from different questions on the ACS.
 - A label is a combination of different levels of factors.
 - A universe is the total number of people involved with a concept.
@@ -185,7 +180,8 @@ Formatting
 - Each row is a location based on specified geography.
 - Data not in tidy format.  Each row should be an observation and each column a variable.
 - Column headers provide categorical information. <br />
-(See: http://vita.had.co.nz/papers/tidy-data.pdf)
+<font size="4"> (See: Hadley Wickham. "Tidy Data". In: Under review by the Journal of Statistical Software (2014). url:
+http://vita.had.co.nz/papers/tidy-data.pdf.)  </font>
 
 Formatting
 ========================================================
@@ -210,16 +206,28 @@ medincome = data.frame(state = med.melt$state, gender = medcols$V1,
                        part.full = medcols$V2, income = med.melt$value)
 head(medincome)
 ```
+<font size="4"> http://api.census.gov/data/2012/acs5?key=[KEY]&get=B19326_001E,B19326_002E,B19326_003E,B19326_004E,B19326_005E,B19326_006E,B19326_007E,NAME&for=state:* </font>
 
 Taking a chance in the Classroom
 ========================================================
 - Article by Morgan, Cetinkaya-Rundel, Stangl with classroom exercises based on ACS data.
-- They use a much smaller sample of the ACS and their data is formatted much differently.
 ```{r, echo=FALSE}
 acsdat = read.csv("datasetSTANGL2013.csv") 
 head(acsdat[,1:6])
 ```
-- We explore some of their exercises using the full ACS dataset.
+- We explore some of their exercises using the full ACS dataset. <br/>
+<font size = "4"> (See: Dalene Stangl, Mine Cetinkaya Rundel, and Kari Lock Morgan. "Taking a Chance in the Classroom:
+The American Community Survey". In: CHANCE 26.1 (2013), pp. 42-46. doi: 10.1080/09332480.
+2013.772392. url: http://www.tandfonline.com/doi/abs/10.1080/09332480.2013.772392.) </font>
+
+Taking a chance in the Classroom
+========================================================
+```{r, echo=FALSE}
+acsdat = read.csv("datasetSTANGL2013.csv") 
+head(acsdat[,1:6])
+```
+- This dataset is a 1000 person subset of the 2010 public use microsample.
+- Each row is an individual, columns are demographic variables unlike from online API.
 
 Taking a chance in the Classroom
 ========================================================
@@ -328,7 +336,7 @@ $$
 
 Standard Errors
 ========================================================
-- We can calculate the confidence interval for the proportion of U.S. residents who do not have health insurance.
+- We can calculate the confidence interval for the proportion of U.S. residents who do not have health insurance from full ACS 5-year dataset.
 - This is done by combining the two formulas on the previous page:
 ```{r, echo=FALSE, warning = FALSE, message = FALSE}
 library(acs)
@@ -357,7 +365,22 @@ CI_L2 = A_B - qnorm(0.975)*SE_p
 CI_U2 = A_B + qnorm(0.975)*SE_p
 print(c(CI_L2, CI_U2))
 ```
-- This CI is a much smaller interval and does not take into account covariances.
+
+Compare with confidence interval from 1000 person subset:<br/>
+```{r, echo=FALSE}
+acsdat = read.csv("datasetSTANGL2013.csv") 
+#ead(acsdat[,5:8])
+p = sum((!acsdat$HealthInsurance) / length(!acsdat$HealthInsurance))
+MOE = 1.96*sqrt(p * (1 - p) / length(acsdat$HealthInsurance))
+print(c(p - MOE, p + MOE))
+```
+
+
+Standard Errors
+========================================================
+- This CI is a much smaller interval in part due to the increase in sample size.
+- CI from full ACS 5-year does not take into account covariances.
+- Data is given as estimates not proportions; not much we can do about standard errors.
 
 Other issues
 ========================================================
@@ -438,6 +461,13 @@ qmap("brooklyn new york city", zoom=10) +
                data = final, alpha = 0.3)
 
 ```
+
+Conclusion
+========================================================
+- Data from online API in difficult to use format.
+- Possible to recreate some of the exercises from "Taking a chance in the Classroom".
+- Data from online API not great for hypothesis tests or confidence intervals.
+- Online API more useful for application developers.
 
 Questions
 ========================================================
