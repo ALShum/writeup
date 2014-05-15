@@ -202,23 +202,160 @@ Taking a chance in the Classroom
 6   1  14       0     NA      NA white
 ```
 
+- We explore some of their exercises using the full ACS dataset.
 
 Taking a chance in the Classroom
 ========================================================
-- In our sample of 1000 people, 861 have health inusrance and 139 do not.  Generate a confidence interval for the proportion of U.S. residents who do not have health insurance.
+First exercise: <br/>
+In our sample of 1000 people, 861 have health inusrance and 139 do not.  Generate a confidence interval for the proportion of U.S. residents who do not have health insurance.
 
-Proportions and Standard Errors
+```
+  HoursWk  Race USCitizen HealthInsurance
+1      40 white         1               1
+2      12 black         1               1
+3      NA white         1               1
+4      NA white         1               1
+5      NA white         1               1
+6      NA white         1               1
+```
+
+```
+[1] 139
+```
+
+
+Taking a chance in the Classroom
+========================================================
+95% Confidence interval for this exercise: <br/>
+<br/>
+$$
+\hat{p} \pm Z^* \sqrt{\frac{\hat{p} (1 - \hat{p})}{n}}
+$$
+
+```
+  HoursWk  Race USCitizen HealthInsurance
+1      40 white         1               1
+2      12 black         1               1
+3      NA white         1               1
+4      NA white         1               1
+5      NA white         1               1
+6      NA white         1               1
+```
+
+```
+[1] 0.1176 0.1604
+```
+
+
+
+From ACS data:
+========================================================
+Individual level data not available. We use nation-wide estimates.<br/>
+<br/>
+Most relevant table from ACS: B27001 Health Insurance Coverage Status by Sex by Age
+
+```
+  gender            age coverage     freq
+1   Male  Under.6.years     With 11567822
+2   Male  Under.6.years       No   800800
+3   Male  6.to.17.years     With 23123651
+4   Male  6.to.17.years       No  2242804
+5   Male 18.to.24.years     With 10395228
+6   Male 18.to.24.years       No  4608837
+```
+
+
+From ACS data:
 ========================================================
 
-Proportions and Standard Errors
+```
+  gender            age coverage     freq
+1   Male  Under.6.years     With 11567822
+2   Male  Under.6.years       No   800800
+3   Male  6.to.17.years     With 23123651
+4   Male  6.to.17.years       No  2242804
+5   Male 18.to.24.years     With 10395228
+6   Male 18.to.24.years       No  4608837
+```
+
+
+Using this data from the ACS here is our estimate of proportion of people without health insurance.
+
+```
+[1] 0.1487
+```
+
+
+Standard Errors
 ========================================================
+- Data from the ACS is an estimated count; proportions require additional calculations.  
+- Margin of error (MOE) is available for estimated counts.
+- For the standard error of a sum of estimates:
+$$
+SE(A + B) = \sqrt{SE(A)^2 + SE(B)^2}
+$$
+- For a confidence interval for proportions:
+$$
+SE(A/B) = 1/B \sqrt{SE(A)^2 - (A/B)^2 SE(B)^2}
+$$
+- These are approximations and do not take into account covariances.
+
+Standard Errors
+========================================================
+- We can calculate the confidence interval for the proportion of U.S. residents who do not have health insurance.
+- This is done by combining the two formulas on the previous page:
+
+```
+[1] 0.1483 0.1492
+```
+
+- This CI is a much smaller interval and does not take into account covariances.
 
 Extending the Exercises
 ========================================================
+Another exercise: Of the 1000 people in our dataset, 761 are white, 106 are black, 70 are asian and 63 are other races.  Create the two-way table for counts of health insurance by race.
+
+```
+   Race HealthInsurance
+1 white               1
+2 black               1
+3 white               1
+4 white               1
+5 white               1
+6 white               1
+```
+
+ACS has corresponding table: C27001A - C27001F: Health Insurance Coverage Status by Age by Race.
 
 Extending the Exercises
 ========================================================
+What if we were interested in health insurance by race and gender?
 
-END
+```
+  Sex  Race HealthInsurance
+1   0 white               1
+2   1 black               1
+3   1 white               1
+4   0 white               1
+5   1 white               1
+6   1 white               1
+```
+
+- C27001A - C27001F: Health Insurance Coverage Status by Age by Race.
+- B27001: Health Insurance Coverage Status by Sex by Age.
+
+Extending the Exercises
 ========================================================
+- It is not possible to combine tables.
+- There's no way to get estimates if we add more variables.
+- The only variables available need to be from an existing concept.
+
+Examples
+========================================================
+![plot of chunk unnamed-chunk-14](slides-figure/unnamed-chunk-14.png) 
+
+
+Questions
+========================================================
+Questions?
 
