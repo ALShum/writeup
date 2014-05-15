@@ -150,7 +150,7 @@ Geography
 
 Formatting
 ========================================================
-Median income by gender and hours worked.  State level geography.
+Median income by gender and hours worked.
 
 ```
            male_total male_full male_other
@@ -165,13 +165,16 @@ Colorado        36651     52889      17561
 total = overall median  <br />
 full = full time  <br />
 other = not full time  <br />
+<font size="4"> http://api.census.gov/data/2012/acs5?key=[KEY]&get=B19326_001E,B19326_002E,B19326_003E,B19326_004E,B19326_005E,B19326_006E,B19326_007E,NAME&for=state:* </font>
 
 Formatting
 ========================================================
-- Each concept has it's own data table.
-- Each column of this table is a different label.
-- Each row of this table is a location based on specified geography.
-- Data not in tidy format.  Column headers provide categorical information.
+- Each concept has its own data table.
+- Each column is a label.
+- Each row is a location based on specified geography.
+- Data not in tidy format.  Each row should be an observation and each column a variable.
+- Column headers provide categorical information. <br />
+(See: http://vita.had.co.nz/papers/tidy-data.pdf)
 
 Formatting
 ========================================================
@@ -311,48 +314,21 @@ Standard Errors
 
 - This CI is a much smaller interval and does not take into account covariances.
 
-Extending the Exercises
-========================================================
-Another exercise: Of the 1000 people in our dataset, 761 are white, 106 are black, 70 are asian and 63 are other races.  Create the two-way table for counts of health insurance by race.
-
-```
-   Race HealthInsurance
-1 white               1
-2 black               1
-3 white               1
-4 white               1
-5 white               1
-6 white               1
-```
-
-ACS has corresponding table: C27001A - C27001F: Health Insurance Coverage Status by Age by Race.
-
-Extending the Exercises
-========================================================
-What if we were interested in health insurance by race and gender?
-
-```
-  Sex  Race HealthInsurance
-1   0 white               1
-2   1 black               1
-3   1 white               1
-4   0 white               1
-5   1 white               1
-6   1 white               1
-```
-
-- C27001A - C27001F: Health Insurance Coverage Status by Age by Race.
-- B27001: Health Insurance Coverage Status by Sex by Age.
-
-Extending the Exercises
+Other issues
 ========================================================
 - It is not possible to combine tables.
-- There's no way to get estimates if we add more variables.
 - The only variables available need to be from an existing concept.
+- Difficult to get compare numbers over different time periods.
 
 Examples
 ========================================================
-![plot of chunk unnamed-chunk-14](slides-figure/unnamed-chunk-14.png) 
+- The ACS 5-year dataset provides information at the census tract level.
+- For New York City census tracts are geographically small due to density.
+- We can look at majority race for each census tract.
+
+Examples
+========================================================
+![plot of chunk unnamed-chunk-12](slides-figure/unnamed-chunk-12.png) 
 
 
 Questions

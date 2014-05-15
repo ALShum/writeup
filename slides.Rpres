@@ -159,7 +159,7 @@ qplot(long, lat, data=subset(map_data('county'), region=="iowa"), group=group, o
 
 Formatting
 ========================================================
-Median income by gender and hours worked.  State level geography.
+Median income by gender and hours worked.
 ```{r, echo=FALSE}
 library(acs)
 library(reshape2)
@@ -176,13 +176,16 @@ head(med[,2:4])
 total = overall median  <br />
 full = full time  <br />
 other = not full time  <br />
+<font size="4"> http://api.census.gov/data/2012/acs5?key=[KEY]&get=B19326_001E,B19326_002E,B19326_003E,B19326_004E,B19326_005E,B19326_006E,B19326_007E,NAME&for=state:* </font>
 
 Formatting
 ========================================================
-- Each concept has it's own data table.
-- Each column of this table is a different label.
-- Each row of this table is a location based on specified geography.
-- Data not in tidy format.  Column headers provide categorical information.
+- Each concept has its own data table.
+- Each column is a label.
+- Each row is a location based on specified geography.
+- Data not in tidy format.  Each row should be an observation and each column a variable.
+- Column headers provide categorical information. <br />
+(See: http://vita.had.co.nz/papers/tidy-data.pdf)
 
 Formatting
 ========================================================
@@ -356,30 +359,17 @@ print(c(CI_L2, CI_U2))
 ```
 - This CI is a much smaller interval and does not take into account covariances.
 
-Extending the Exercises
-========================================================
-Another exercise: Of the 1000 people in our dataset, 761 are white, 106 are black, 70 are asian and 63 are other races.  Create the two-way table for counts of health insurance by race.
-```{r, echo=FALSE, cache=TRUE}
-acsdat = read.csv("datasetSTANGL2013.csv") 
-head(acsdat[,c(6,8)])
-```
-ACS has corresponding table: C27001A - C27001F: Health Insurance Coverage Status by Age by Race.
-
-Extending the Exercises
-========================================================
-What if we were interested in health insurance by race and gender?
-```{r, echo=FALSE, cache=TRUE}
-acsdat = read.csv("datasetSTANGL2013.csv") 
-head(acsdat[,c(1,6,8)])
-```
-- C27001A - C27001F: Health Insurance Coverage Status by Age by Race.
-- B27001: Health Insurance Coverage Status by Sex by Age.
-
-Extending the Exercises
+Other issues
 ========================================================
 - It is not possible to combine tables.
-- There's no way to get estimates if we add more variables.
 - The only variables available need to be from an existing concept.
+- Difficult to get compare numbers over different time periods.
+
+Examples
+========================================================
+- The ACS 5-year dataset provides information at the census tract level.
+- For New York City census tracts are geographically small due to density.
+- We can look at majority race for each census tract.
 
 Examples
 ========================================================
