@@ -1,4 +1,4 @@
-
+Working with ACS Data
 ========================================================
 author: Alex Shum
 date: May 2014
@@ -284,7 +284,7 @@ healthsex = data.frame(state = health.melt$state, gender = healthcols$V1,
                  age = healthcols$V2, coverage = healthcols$V3, freq = health.melt$value)
 healthsex$age = factor(healthsex$age, levels(healthsex$age)[c(9,6,1:5,7,8)])
 healthsex = healthsex[,-1]
-head(healthsex)
+head(healthsex, 8)
 ```
 
 From ACS data:

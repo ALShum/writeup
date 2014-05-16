@@ -1,4 +1,4 @@
-
+Working with ACS Data
 ========================================================
 author: Alex Shum
 date: May 2014
@@ -280,6 +280,8 @@ Most relevant table from ACS: B27001 Health Insurance Coverage Status by Sex by 
 4   Male  6.to.17.years       No  2242804
 5   Male 18.to.24.years     With 10395228
 6   Male 18.to.24.years       No  4608837
+7   Male 25.to.34.years     With 13478715
+8   Male 25.to.34.years       No  6191777
 ```
 
 
