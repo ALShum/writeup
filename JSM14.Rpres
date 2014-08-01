@@ -3,15 +3,12 @@ Working with the online API of the Census Bureau
 author: Alex Shum, Heike Hofmann, Eric Hare
 date: August 2014
 
-Overview
-======
-
 
 Online access to Census Bureau data
 ===
 
 * API to  access data released about three years ago, providing at first access to the 2010 Decennial Census
-* Additional data acceeible since, among others American Community Survey
+* Additional data accessible since, among others American Community Survey
 * API allows access to manageable pieces of the surveys, reduces load of data handling for users
 * Access to data for web developers, ... and statisticians in their familiar computational environment
 
@@ -234,7 +231,7 @@ Other questions require
 Limits of the API
 ===
 
-* data provided from tabulated sources, individual level data not avaialable through API (obvious privacy issues)
+* data provided from tabulated sources, individual level data not available through API (obvious privacy issues)
   * limited amount of cross-classification
   * no possibility to combine tables 
   * 'untidy' data format (Wickham, JSS 2014) requires further data manipulation for CI or tests
